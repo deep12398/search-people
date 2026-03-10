@@ -931,6 +931,50 @@ body::before {
   font-size: 0.85rem;
 }
 
+/* ─── CHAT BUBBLES ─── */
+.chat-thread {
+  margin-top: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  animation: fadeUp 0.35s ease both;
+}
+
+.chat-bubble {
+  max-width: 88%;
+  padding: 0.6rem 0.9rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.chat-bubble.user {
+  align-self: flex-end;
+  background: var(--bg-elevated);
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
+}
+
+.chat-bubble.ai {
+  align-self: flex-start;
+  background: var(--bg-card);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-left: 2.5px solid var(--accent);
+  box-shadow: var(--shadow-sm);
+}
+
+.chat-bubble.ai::before {
+  content: 'AI  ';
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--accent);
+  display: block;
+  margin-bottom: 0.2rem;
+}
+
 /* ─── EXAMPLE QUERIES ─── */
 .examples {
   display: grid;
@@ -1109,7 +1153,18 @@ body::before {
 <div class="main-content">
 
 <header class="header">
-  <div class="header-meta" id="headerMeta">PDL Search</div>
+  <div style="display:flex;align-items:center;gap:0.75rem">
+    <button id="demoBtn" onclick="runDemo()" style="
+      font-family:var(--font-body);font-size:0.75rem;font-weight:500;
+      padding:0.3rem 0.75rem;border-radius:100px;cursor:pointer;
+      border:1.5px dashed var(--border-strong);background:transparent;
+      color:var(--text-tertiary);transition:all var(--transition);
+    " onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'"
+       onmouseout="this.style.borderColor='var(--border-strong)';this.style.color='var(--text-tertiary)'">
+      ▶ Demo
+    </button>
+    <div class="header-meta" id="headerMeta">PDL Search</div>
+  </div>
 </header>
 
 <!-- Hero / Search -->
@@ -1147,6 +1202,8 @@ body::before {
     </button>
     <div class="search-loading" id="searchLoading"></div>
   </div>
+
+  <div id="chatThread"></div>
 
   <div class="examples" id="examples">
     <div class="example-card" data-query="帮我找硅谷会 Python 和机器学习的高级工程师">
@@ -1196,6 +1253,7 @@ const state = {
   scenario: 'auto',
   loading: false,
   results: null,
+  sessionId: '',  // Agent SDK session ID
 };
 
 // ─── Theme colors per scenario ───
@@ -1226,6 +1284,7 @@ const modalTitleCo = document.getElementById('modalTitleCo');
 const modalBody = document.getElementById('modalBody');
 const modalClose = document.getElementById('modalClose');
 const headerMeta = document.getElementById('headerMeta');
+const chatThread = document.getElementById('chatThread');
 
 // ─── Auto-resize textarea ───
 searchInput.addEventListener('input', () => {
@@ -1275,19 +1334,37 @@ async function doSearch() {
   state.loading = true;
   searchBtn.disabled = true;
   searchLoading.classList.add('active');
-  hero.classList.add('collapsed');
+  // 只有新会话时才立即折叠；追问模式（有 sessionId）保持展开
+  if (!state.sessionId) {
+    hero.classList.add('collapsed');
+  }
   resultsArea.innerHTML = '';
   setActiveNav('search');
 
   try {
-    const resp = await fetch('/api/search', {
+    const resp = await fetch('/api/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ query, size: 15 }),
+      body: JSON.stringify({ message: query, session_id: state.sessionId }),
     });
 
     if (!resp.ok) throw new Error(`Server error: ${resp.status}`);
     const data = await resp.json();
+
+    // 保存 session ID（Agent SDK 会话）
+    if (data.session_id) state.sessionId = data.session_id;
+
+    // ── 追问响应 ──
+    if (data.type === 'question') {
+      appendChatBubble('user', query);
+      appendChatBubble('ai', data.question);
+      searchInput.value = '';
+      searchInput.style.height = 'auto';
+      searchInput.focus();
+      return;
+    }
+
+    // ── 搜索结果响应 ──
     state.results = data;
 
     // Update scenario theme
@@ -1304,6 +1381,9 @@ async function doSearch() {
     });
 
     headerMeta.textContent = `${SCENARIO_LABELS[detectedScenario] || detectedScenario} · ${(data.total || 0).toLocaleString()} matches`;
+
+    // 结果出来后折叠 hero（追问完才搜到这里）
+    hero.classList.add('collapsed');
 
     // Show API-level errors (quota, auth)
     if (data.error) {
@@ -1523,6 +1603,26 @@ document.addEventListener('keydown', (e) => {
 });
 
 // ─── Helpers ───
+// ─── Chat bubbles ───
+function appendChatBubble(role, text) {
+  // 如果还没有 chat-thread wrapper，创建一个
+  if (!chatThread.querySelector('.chat-thread')) {
+    chatThread.innerHTML = '<div class="chat-thread"></div>';
+  }
+  const thread = chatThread.querySelector('.chat-thread');
+  const bubble = document.createElement('div');
+  bubble.className = `chat-bubble ${role}`;
+  bubble.textContent = text;
+  thread.appendChild(bubble);
+  // 显示 examples 上方
+  document.getElementById('examples').style.display = 'none';
+}
+
+function clearChatBubbles() {
+  chatThread.innerHTML = '';
+  document.getElementById('examples').style.display = '';
+}
+
 function appendQuery(text) {
   searchInput.value += ' ' + text;
   searchInput.focus();
@@ -1592,11 +1692,18 @@ function setActiveNav(page) {
 
 function goHome(e) {
   if (e) e.preventDefault();
+  // Close the Agent SDK session on server
+  if (state.sessionId) {
+    fetch(`/api/chat/${state.sessionId}`, { method: 'DELETE' }).catch(() => {});
+    state.sessionId = '';
+  }
   hero.classList.remove('collapsed');
   resultsArea.innerHTML = '';
   searchInput.value = '';
+  searchInput.style.height = 'auto';
   headerMeta.textContent = 'PDL Search';
   state.results = null;
+  clearChatBubbles();
   setTheme('auto');
   setActiveNav('home');
   document.querySelectorAll('.scenario-pill').forEach(p => {
@@ -1621,6 +1728,100 @@ function pickScenario(scenario) {
   });
   closeSidebarMobile();
   searchInput.focus();
+}
+
+// ─── Demo Mode ───
+const DEMO_SCENARIOS = [
+  {
+    query: "帮我找硅谷会 Python 和机器学习的高级工程师",
+    scenario: "recruiting",
+    sql: "SELECT * FROM person WHERE skills LIKE '%python%' AND skills LIKE '%machine learning%' AND job_title LIKE '%senior%' AND location_metro = 'San Francisco, CA'",
+    description: "寻找硅谷高级 ML / Python 工程师候选人",
+    total: 1225112,
+    people: [
+      { name: "Tao Feng", title: "Staff Software Engineer", company: "Google", location: "San Francisco, CA", company_industry: "Internet", company_size: "10001+", linkedin_url: "https://linkedin.com/in/taofeng", score: 9, reason: "Google Staff 级工程师，Python 和 ML 经验丰富，地点完全匹配", has_email: true, has_phone: false },
+      { name: "Josh Finnie", title: "Senior Software Engineer", company: "People Data Labs", location: "San Francisco, CA", company_industry: "Computer Software", company_size: "201-500", linkedin_url: "https://linkedin.com/in/joshfinnie", score: 8, reason: "高级工程师，数据工程背景，Python 技术栈", has_email: true, has_phone: true },
+      { name: "Jessica Kosturko", title: "Senior Engineering Manager, Google Cloud", company: "Google", location: "San Francisco, CA", company_industry: "Internet", company_size: "10001+", linkedin_url: "https://linkedin.com/in/jkosturko", score: 7, reason: "Google Cloud 工程经理，ML 基础设施背景", has_email: false, has_phone: false },
+      { name: "Robert Elwell", title: "VP of Software Engineering", company: "MacStadium", location: "San Jose, CA", company_industry: "Computer Software", company_size: "51-200", linkedin_url: "https://linkedin.com/in/relwell", score: 6, reason: "VP 级别工程师，管理经验丰富，湾区位置", has_email: true, has_phone: false },
+      { name: "Priya Nair", title: "Principal ML Engineer", company: "Stripe", location: "San Francisco, CA", company_industry: "Financial Services", company_size: "5001-10000", linkedin_url: "https://linkedin.com/in/priyanair", score: 9, reason: "Stripe 首席 ML 工程师，金融科技 + ML 双背景", has_email: true, has_phone: true },
+      { name: "Kevin Zhang", title: "Senior Data Scientist", company: "Airbnb", location: "San Francisco, CA", company_industry: "Internet", company_size: "5001-10000", linkedin_url: "https://linkedin.com/in/kevinzhang", score: 7, reason: "Airbnb 高级数据科学家，Python 和统计建模", has_email: true, has_phone: false },
+    ],
+    summary: "共找到 122 万+ 工程师，筛选出 6 位最匹配的硅谷高级 ML/Python 工程师候选人，均来自知名科技公司。",
+    narrowing: { suggestions: ["要限制具体技术栈吗？如 PyTorch / TensorFlow / JAX？", "要指定公司规模吗？比如 1000 人以上的大厂？", "要限制工作年限吗？比如 5 年以上经验？"] }
+  },
+  {
+    query: "找 SaaS 行业的市场总监，200人以上的公司",
+    scenario: "marketing",
+    sql: "SELECT * FROM person WHERE job_title LIKE '%marketing director%' AND job_company_industry = 'computer software' AND job_company_employee_count >= 200",
+    description: "寻找 SaaS 公司市场总监，200 人以上规模",
+    total: 48320,
+    people: [
+      { name: "Sarah Chen", title: "Director of Marketing", company: "Salesforce", location: "San Francisco, CA", company_industry: "Computer Software", company_size: "10001+", linkedin_url: "https://linkedin.com/in/sarahchen", score: 9, reason: "Salesforce 市场总监，顶级 SaaS 公司，品牌影响力强", has_email: true, has_phone: false },
+      { name: "Marcus Webb", title: "VP of Marketing", company: "HubSpot", location: "Boston, MA", company_industry: "Computer Software", company_size: "5001-10000", linkedin_url: "https://linkedin.com/in/marcuswebb", score: 9, reason: "HubSpot 营销副总裁，入站营销方法论领导者", has_email: true, has_phone: true },
+      { name: "Lily Okonkwo", title: "Head of Product Marketing", company: "Notion", location: "New York, NY", company_industry: "Computer Software", company_size: "201-500", linkedin_url: "https://linkedin.com/in/lilyokonkwo", score: 8, reason: "Notion 产品营销负责人，增长型 SaaS 丰富经验", has_email: false, has_phone: false },
+      { name: "Daniel Park", title: "Marketing Director", company: "Figma", location: "San Francisco, CA", company_industry: "Computer Software", company_size: "1001-5000", linkedin_url: "https://linkedin.com/in/danielpark", score: 8, reason: "Figma 市场总监，设计工具 PLG 营销专家", has_email: true, has_phone: false },
+      { name: "Anna Rostova", title: "Director of Demand Generation", company: "Snowflake", location: "San Mateo, CA", company_industry: "Computer Software", company_size: "5001-10000", linkedin_url: "https://linkedin.com/in/annarostova", score: 7, reason: "Snowflake 需求生成总监，B2B 企业营销专家", has_email: true, has_phone: true },
+    ],
+    summary: "共找到 4.8 万名候选人，筛选出 5 位 SaaS 市场总监，均来自知名软件公司，营销经验丰富。",
+  },
+  {
+    query: "找科技领域的内容创作者和博主，在美国",
+    scenario: "kol",
+    sql: "SELECT * FROM person WHERE (job_title LIKE '%content creator%' OR job_title LIKE '%blogger%' OR job_title LIKE '%influencer%') AND location_country = 'united states' AND job_company_industry = 'internet'",
+    description: "寻找美国科技领域 KOL / 内容创作者",
+    total: 8740,
+    people: [
+      { name: "Alex Rivera", title: "Tech Content Creator & YouTuber", company: "Independent", location: "Los Angeles, CA", company_industry: "Internet", company_size: "1-10", linkedin_url: "https://linkedin.com/in/alexrivera", score: 9, reason: "科技 YouTube 频道 50 万订阅，擅长 AI 和软件评测", has_email: true, has_phone: false },
+      { name: "Maya Johnson", title: "Developer Advocate & Blogger", company: "Vercel", location: "New York, NY", company_industry: "Internet", company_size: "201-500", linkedin_url: "https://linkedin.com/in/mayajohnson", score: 8, reason: "Vercel 开发者布道师，技术博客影响力大", has_email: true, has_phone: false },
+      { name: "Chris Wu", title: "AI/ML Content Creator", company: "Independent", location: "San Francisco, CA", company_industry: "Internet", company_size: "1-10", linkedin_url: "https://linkedin.com/in/chriswu", score: 8, reason: "AI 领域专业内容创作者，Newsletter 订阅 3 万+", has_email: false, has_phone: false },
+      { name: "Destiny Brooks", title: "Tech Influencer & Podcaster", company: "Independent", location: "Austin, TX", company_industry: "Internet", company_size: "1-10", linkedin_url: "https://linkedin.com/in/destinybrooks", score: 7, reason: "科技播客主播，专注创业和产品话题", has_email: true, has_phone: true },
+    ],
+    summary: "共找到 8700 位科技 KOL，筛选出 4 位活跃的美国科技内容创作者，覆盖 YouTube / 博客 / 播客多平台。",
+  },
+  {
+    query: "找医疗行业 500 人以上公司的 VP 或采购负责人",
+    scenario: "sales",
+    sql: "SELECT * FROM person WHERE (job_title LIKE '%vp%' OR job_title LIKE '%vice president%' OR job_title LIKE '%procurement%') AND job_company_industry = 'hospital & health care' AND job_company_employee_count >= 500",
+    description: "寻找大型医疗机构采购决策人",
+    total: 23150,
+    people: [
+      { name: "Dr. Patricia Moore", title: "VP of Operations", company: "Kaiser Permanente", location: "Oakland, CA", company_industry: "Hospital & Health Care", company_size: "10001+", linkedin_url: "https://linkedin.com/in/patriciamoore", score: 9, reason: "Kaiser 运营副总裁，掌握大规模采购决策权", has_email: false, has_phone: false },
+      { name: "James Thornton", title: "Chief Procurement Officer", company: "Mayo Clinic", location: "Rochester, MN", company_industry: "Hospital & Health Care", company_size: "10001+", linkedin_url: "https://linkedin.com/in/jamesthornton", score: 10, reason: "Mayo Clinic 首席采购官，直接负责采购决策", has_email: true, has_phone: false },
+      { name: "Linda Xu", title: "VP Supply Chain & Procurement", company: "Ascension Health", location: "St. Louis, MO", company_industry: "Hospital & Health Care", company_size: "10001+", linkedin_url: "https://linkedin.com/in/lindaxu", score: 9, reason: "供应链和采购双重职责，大型医疗集团", has_email: true, has_phone: true },
+      { name: "Robert Nguyen", title: "VP of Clinical Operations", company: "CommonSpirit Health", location: "Chicago, IL", company_industry: "Hospital & Health Care", company_size: "10001+", linkedin_url: "https://linkedin.com/in/robertnguyen", score: 8, reason: "临床运营副总裁，技术和设备采购影响者", has_email: false, has_phone: false },
+      { name: "Susan Blackwell", title: "Director of Purchasing", company: "HCA Healthcare", location: "Nashville, TN", company_industry: "Hospital & Health Care", company_size: "10001+", linkedin_url: "https://linkedin.com/in/susanblackwell", score: 7, reason: "HCA 采购总监，全国最大医院集团之一", has_email: true, has_phone: false },
+    ],
+    summary: "共找到 2.3 万名候选人，筛选出 5 位大型医疗机构的采购决策者，均为 VP 级别或首席采购官。",
+  }
+];
+
+let demoIndex = 0;
+
+function runDemo() {
+  const demo = DEMO_SCENARIOS[demoIndex % DEMO_SCENARIOS.length];
+  demoIndex++;
+
+  // Fill search box
+  searchInput.value = demo.query;
+  searchInput.style.height = 'auto';
+  searchInput.style.height = Math.min(searchInput.scrollHeight, 120) + 'px';
+
+  // Collapse hero
+  hero.classList.add('collapsed');
+  resultsArea.innerHTML = '';
+  setActiveNav('search');
+
+  // Set theme
+  setTheme(demo.scenario);
+  document.querySelectorAll('.scenario-pill').forEach(p => {
+    p.classList.toggle('active', p.dataset.scenario === demo.scenario);
+  });
+
+  // Update header
+  headerMeta.textContent = `${SCENARIO_LABELS[demo.scenario]} · ${(demo.total || 0).toLocaleString()} matches · DEMO`;
+
+  // Render
+  renderResults(demo);
 }
 
 // Focus search on load
