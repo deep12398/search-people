@@ -1,0 +1,6 @@
+claude-agent-sdk
+anthropic
+httpx
+python-dotenv
+fastapi
+uvicorn[standard]
