@@ -1,0 +1,1630 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WaveHeart - People Search</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300..700;1,9..40,300..700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+:root {
+  --bg: #FAF8F4;
+  --bg-card: #FFFFFF;
+  --bg-elevated: #F3F0EA;
+  --text: #1A1715;
+  --text-secondary: #6B645A;
+  --text-tertiary: #9B9488;
+  --border: #E8E4DD;
+  --border-strong: #D4CFC6;
+
+  /* Scenario accent colors */
+  --accent-recruiting: #4338CA;
+  --accent-marketing: #0F766E;
+  --accent-kol: #DB2777;
+  --accent-sales: #B45309;
+
+  /* Active accent (set by JS) */
+  --accent: var(--accent-recruiting);
+  --accent-light: #EEF2FF;
+  --accent-glow: rgba(67, 56, 202, 0.08);
+
+  --radius: 12px;
+  --radius-sm: 8px;
+  --radius-xs: 6px;
+  --shadow-sm: 0 1px 2px rgba(26,23,21,0.04);
+  --shadow: 0 2px 8px rgba(26,23,21,0.06), 0 1px 2px rgba(26,23,21,0.04);
+  --shadow-lg: 0 8px 32px rgba(26,23,21,0.08), 0 2px 8px rgba(26,23,21,0.04);
+  --shadow-xl: 0 16px 48px rgba(26,23,21,0.10), 0 4px 12px rgba(26,23,21,0.06);
+
+  --font-display: 'Instrument Serif', Georgia, serif;
+  --font-body: 'DM Sans', -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+
+  --transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-spring: 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+html { font-size: 16px; -webkit-font-smoothing: antialiased; }
+
+body {
+  font-family: var(--font-body);
+  color: var(--text);
+  background: var(--bg);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ─── LAYOUT: Sidebar + Main ─── */
+.app-layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+/* ─── SIDEBAR ─── */
+.sidebar {
+  width: 220px;
+  flex-shrink: 0;
+  background: var(--bg-card);
+  border-right: 1px solid var(--border);
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  z-index: 150;
+  display: flex;
+  flex-direction: column;
+  padding: 1.25rem 0;
+  transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.sidebar-logo {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0 1.25rem;
+  margin-bottom: 2rem;
+  text-decoration: none;
+  color: var(--text);
+}
+
+.sidebar-logo .logo-wave {
+  width: 28px;
+  height: 28px;
+  background: var(--accent);
+  border-radius: 50%;
+  position: relative;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.sidebar-logo .logo-wave::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: -4px;
+  right: -4px;
+  height: 16px;
+  background: rgba(255,255,255,0.3);
+  border-radius: 50%;
+  animation: wave 3s ease-in-out infinite;
+}
+
+.sidebar-logo span {
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  letter-spacing: -0.02em;
+}
+
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 0 0.65rem;
+  flex: 1;
+}
+
+.nav-section-label {
+  font-size: 0.62rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-tertiary);
+  padding: 1.25rem 0.6rem 0.4rem;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.55rem 0.75rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.88rem;
+  font-weight: 450;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all var(--transition);
+  text-decoration: none;
+  border: none;
+  background: none;
+  width: 100%;
+  text-align: left;
+  font-family: var(--font-body);
+}
+
+.nav-item:hover {
+  background: var(--bg-elevated);
+  color: var(--text);
+}
+
+.nav-item.active {
+  background: var(--accent-light);
+  color: var(--accent);
+  font-weight: 550;
+}
+
+.nav-icon {
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.95rem;
+  flex-shrink: 0;
+  opacity: 0.75;
+}
+
+.nav-item.active .nav-icon { opacity: 1; }
+
+.sidebar-footer {
+  padding: 0.75rem 1.25rem;
+  border-top: 1px solid var(--border);
+  margin-top: auto;
+}
+
+.sidebar-footer-text {
+  font-size: 0.68rem;
+  color: var(--text-tertiary);
+  font-family: var(--font-mono);
+  line-height: 1.5;
+}
+
+/* Main content area — offset by sidebar width */
+.main-content {
+  flex: 1;
+  margin-left: 220px;
+  min-height: 100vh;
+}
+
+/* Mobile sidebar toggle */
+.sidebar-toggle {
+  display: none;
+  position: fixed;
+  top: 0.85rem;
+  left: 0.85rem;
+  z-index: 200;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow);
+  transition: all var(--transition);
+}
+
+.sidebar-toggle:hover { background: var(--bg-elevated); }
+
+.sidebar-toggle svg {
+  width: 18px;
+  height: 18px;
+  color: var(--text);
+}
+
+/* Sidebar overlay for mobile */
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(26, 23, 21, 0.3);
+  backdrop-filter: blur(4px);
+  z-index: 140;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.sidebar-overlay.visible {
+  opacity: 1;
+}
+
+/* Noise texture overlay */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  opacity: 0.3;
+  pointer-events: none;
+  z-index: 9999;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+}
+
+/* ─── HEADER (inside main-content) ─── */
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(250, 248, 244, 0.85);
+  backdrop-filter: blur(20px) saturate(1.2);
+  border-bottom: 1px solid var(--border);
+  padding: 0 2rem;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+@keyframes wave {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+.header-meta {
+  font-size: 0.75rem;
+  color: var(--text-tertiary);
+  font-family: var(--font-mono);
+}
+
+/* ─── HERO / SEARCH ─── */
+.hero {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 3.5rem 1.5rem 1rem;
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.hero.collapsed {
+  padding-top: 1.5rem;
+  padding-bottom: 0;
+}
+
+.hero-title {
+  font-family: var(--font-display);
+  font-size: 3.2rem;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+  margin-bottom: 0.75rem;
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.hero.collapsed .hero-title {
+  font-size: 0;
+  margin: 0;
+  opacity: 0;
+  height: 0;
+  overflow: hidden;
+}
+
+.hero-subtitle {
+  font-size: 1.05rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin-bottom: 2rem;
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.hero.collapsed .hero-subtitle {
+  font-size: 0;
+  margin: 0;
+  opacity: 0;
+  height: 0;
+  overflow: hidden;
+}
+
+/* Scenario pills */
+.scenarios {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
+  flex-wrap: wrap;
+  transition: all 0.4s ease;
+}
+
+.hero.collapsed .scenarios {
+  margin-bottom: 0.75rem;
+}
+
+.scenario-pill {
+  padding: 0.4rem 0.9rem;
+  border-radius: 100px;
+  border: 1.5px solid var(--border);
+  background: var(--bg-card);
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all var(--transition);
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  user-select: none;
+}
+
+.scenario-pill:hover {
+  border-color: var(--border-strong);
+  background: var(--bg-elevated);
+}
+
+.scenario-pill.active {
+  border-color: var(--accent);
+  background: var(--accent-light);
+  color: var(--accent);
+}
+
+.scenario-pill .pill-icon {
+  font-size: 0.9rem;
+  line-height: 1;
+}
+
+/* Search input */
+.search-box {
+  position: relative;
+  background: var(--bg-card);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  transition: all var(--transition);
+  overflow: hidden;
+}
+
+.search-box:focus-within {
+  border-color: var(--accent);
+  box-shadow: var(--shadow-lg), 0 0 0 3px var(--accent-glow);
+}
+
+.search-input {
+  width: 100%;
+  padding: 1rem 3.5rem 1rem 1.15rem;
+  border: none;
+  background: transparent;
+  font-family: var(--font-body);
+  font-size: 1rem;
+  color: var(--text);
+  outline: none;
+  resize: none;
+  line-height: 1.5;
+  min-height: 56px;
+  max-height: 120px;
+}
+
+.search-input::placeholder {
+  color: var(--text-tertiary);
+}
+
+.search-btn {
+  position: absolute;
+  right: 0.65rem;
+  bottom: 0.65rem;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-xs);
+  background: var(--accent);
+  border: none;
+  color: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition);
+}
+
+.search-btn:hover { opacity: 0.85; transform: scale(1.04); }
+.search-btn:active { transform: scale(0.96); }
+.search-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+.search-btn svg { width: 18px; height: 18px; }
+
+/* Loading bar */
+.search-loading {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--border);
+  overflow: hidden;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.search-loading.active { opacity: 1; }
+
+.search-loading::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--accent);
+  animation: loading 1.5s ease-in-out infinite;
+  transform-origin: left;
+}
+
+@keyframes loading {
+  0% { transform: translateX(-100%); }
+  50% { transform: translateX(0%); }
+  100% { transform: translateX(100%); }
+}
+
+/* ─── RESULTS AREA ─── */
+.results-area {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 0 1.5rem 4rem;
+}
+
+/* Status bar */
+.results-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 0 0.75rem;
+  animation: fadeUp 0.4s ease both;
+}
+
+.results-count {
+  font-size: 0.82rem;
+  color: var(--text-tertiary);
+  font-family: var(--font-mono);
+}
+
+.results-scenario {
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--accent);
+  background: var(--accent-light);
+  padding: 0.25rem 0.6rem;
+  border-radius: 100px;
+}
+
+.results-summary {
+  font-size: 0.88rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  padding: 0.5rem 0 1rem;
+  animation: fadeUp 0.5s ease both;
+}
+
+.results-sql {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  color: var(--text-tertiary);
+  background: transparent;
+  padding: 0.35rem 0;
+  margin-bottom: 0.5rem;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  animation: fadeUp 0.45s ease both;
+  cursor: pointer;
+  transition: all var(--transition);
+  max-width: 100%;
+}
+
+.results-sql:hover { color: var(--text-secondary); }
+.results-sql::before { content: 'SQL: '; font-weight: 600; opacity: 0.5; }
+
+/* Narrowing suggestions */
+.narrowing {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1rem 1.25rem;
+  margin-bottom: 1.25rem;
+  animation: fadeUp 0.5s ease both;
+  box-shadow: var(--shadow-sm);
+}
+
+.narrowing-title {
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--accent);
+  margin-bottom: 0.5rem;
+}
+
+.narrowing-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.narrowing-item {
+  font-size: 0.88rem;
+  color: var(--text);
+  padding: 0.4rem 0.7rem;
+  background: var(--bg-card);
+  border-radius: var(--radius-xs);
+  cursor: pointer;
+  transition: all var(--transition);
+  border: 1px solid transparent;
+}
+
+.narrowing-item:hover {
+  border-color: var(--accent);
+  transform: translateX(4px);
+}
+
+/* ─── PERSON CARDS ─── */
+.person-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.15rem 1.25rem;
+  margin-bottom: 0.75rem;
+  transition: all var(--transition);
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  animation: fadeUp 0.5s ease both;
+}
+
+.person-card::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: var(--accent);
+  opacity: 0;
+  transition: opacity var(--transition);
+}
+
+.person-card:hover {
+  border-color: var(--border-strong);
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-1px);
+}
+
+.person-card:hover::before { opacity: 1; }
+
+.card-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.card-identity { flex: 1; min-width: 0; }
+
+.card-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  font-weight: 400;
+  color: white;
+  flex-shrink: 0;
+  letter-spacing: 0.02em;
+}
+
+.card-name {
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+  text-transform: capitalize;
+}
+
+.card-title {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  line-height: 1.4;
+  margin-top: 0.15rem;
+}
+
+.card-title strong {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.card-details {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 0.65rem;
+}
+
+.card-tag {
+  font-size: 0.75rem;
+  padding: 0.25rem 0.6rem;
+  border-radius: 100px;
+  background: var(--bg-elevated);
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
+  white-space: nowrap;
+  font-weight: 450;
+}
+
+.card-tag.location { color: #1D4ED8; background: #EFF6FF; border-color: #DBEAFE; }
+.card-tag.industry { color: #7C3AED; background: #F5F3FF; border-color: #EDE9FE; }
+.card-tag.size { color: #0F766E; background: #F0FDFA; border-color: #CCFBF1; }
+
+.card-score {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.score-badge {
+  min-width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: white;
+  position: relative;
+}
+
+.score-badge::after {
+  content: '/10';
+  font-size: 0.55rem;
+  opacity: 0.7;
+  font-weight: 400;
+  margin-left: 1px;
+}
+
+.score-high { background: linear-gradient(135deg, #16A34A, #15803D); }
+.score-mid { background: linear-gradient(135deg, #EAB308, #CA8A04); }
+.score-low { background: linear-gradient(135deg, #9B9488, #78716C); }
+
+.card-reason {
+  font-size: 0.84rem;
+  color: var(--text-secondary);
+  margin-top: 0.6rem;
+  line-height: 1.5;
+  padding: 0.45rem 0.7rem;
+  background: var(--bg-elevated);
+  border-radius: var(--radius-xs);
+  border-left: 2px solid var(--accent);
+}
+
+.card-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+  padding-top: 0.65rem;
+  border-top: 1px solid var(--border);
+  opacity: 0;
+  max-height: 0;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.person-card:hover .card-actions,
+.person-card.expanded .card-actions {
+  opacity: 1;
+  max-height: 60px;
+}
+
+.card-action-btn {
+  font-family: var(--font-body);
+  font-size: 0.76rem;
+  font-weight: 500;
+  padding: 0.35rem 0.7rem;
+  border-radius: var(--radius-xs);
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all var(--transition);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.card-action-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-light);
+}
+
+.card-action-btn.primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: white;
+}
+
+.card-action-btn.primary:hover { opacity: 0.85; }
+
+/* ─── ENRICH MODAL ─── */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(26, 23, 21, 0.4);
+  backdrop-filter: blur(8px);
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.modal-overlay.visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.modal {
+  background: var(--bg-card);
+  border-radius: calc(var(--radius) + 4px);
+  box-shadow: var(--shadow-xl);
+  max-width: 560px;
+  width: 100%;
+  max-height: 85vh;
+  overflow-y: auto;
+  transform: translateY(16px) scale(0.97);
+  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+  border: 1px solid var(--border);
+}
+
+.modal-overlay.visible .modal {
+  transform: translateY(0) scale(1);
+}
+
+.modal-header {
+  padding: 1.25rem 1.5rem 0;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.modal-close {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--bg-elevated);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  color: var(--text-secondary);
+  transition: all var(--transition);
+  flex-shrink: 0;
+}
+
+.modal-close:hover { border-color: var(--border-strong); color: var(--text); }
+
+.modal-body { padding: 1rem 1.5rem 1.5rem; }
+
+.modal-name {
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+  letter-spacing: -0.02em;
+  text-transform: capitalize;
+}
+
+.modal-title-co {
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+  margin-top: 0.25rem;
+}
+
+.modal-section {
+  margin-top: 1.25rem;
+}
+
+.modal-section-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-tertiary);
+  margin-bottom: 0.5rem;
+}
+
+.modal-exp-item {
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.88rem;
+}
+
+.modal-exp-item:last-child { border: none; }
+
+.modal-exp-role { font-weight: 600; color: var(--text); }
+.modal-exp-co { color: var(--text-secondary); }
+.modal-exp-dates { font-size: 0.75rem; color: var(--text-tertiary); font-family: var(--font-mono); }
+
+.modal-skills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.modal-skill {
+  font-size: 0.75rem;
+  padding: 0.25rem 0.6rem;
+  border-radius: 100px;
+  background: var(--accent-light);
+  color: var(--accent);
+  border: 1px solid transparent;
+}
+
+.modal-links {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.modal-link {
+  font-size: 0.82rem;
+  color: var(--accent);
+  text-decoration: none;
+  font-family: var(--font-mono);
+  transition: opacity var(--transition);
+}
+
+.modal-link:hover { opacity: 0.7; }
+
+.modal-loading {
+  text-align: center;
+  padding: 3rem 1.5rem;
+  color: var(--text-tertiary);
+  font-size: 0.88rem;
+}
+
+.modal-loading .spinner {
+  width: 24px;
+  height: 24px;
+  border: 2px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin: 0 auto 0.75rem;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ─── EMPTY STATE ─── */
+.empty-state {
+  text-align: center;
+  padding: 4rem 2rem;
+  color: var(--text-tertiary);
+  animation: fadeUp 0.5s ease both;
+}
+
+.empty-icon {
+  font-size: 2.5rem;
+  margin-bottom: 0.75rem;
+  opacity: 0.5;
+}
+
+.empty-text {
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  color: var(--text-secondary);
+  margin-bottom: 0.35rem;
+}
+
+.empty-hint {
+  font-size: 0.85rem;
+}
+
+/* ─── EXAMPLE QUERIES ─── */
+.examples {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+  margin-top: 1.5rem;
+  transition: all 0.5s ease;
+}
+
+.hero.collapsed .examples {
+  height: 0;
+  margin: 0;
+  opacity: 0;
+  overflow: hidden;
+}
+
+.example-card {
+  padding: 0.85rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg-card);
+  cursor: pointer;
+  transition: all var(--transition);
+  font-size: 0.85rem;
+  color: var(--text);
+  line-height: 1.45;
+  position: relative;
+  overflow: hidden;
+}
+
+.example-card::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  transition: width var(--transition);
+}
+
+.example-card:nth-child(1)::before { background: var(--accent-recruiting); }
+.example-card:nth-child(2)::before { background: var(--accent-marketing); }
+.example-card:nth-child(3)::before { background: var(--accent-kol); }
+.example-card:nth-child(4)::before { background: var(--accent-sales); }
+
+.example-card:hover {
+  border-color: var(--border-strong);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+.example-card:hover::before { width: 4px; }
+
+.example-label {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 600;
+  margin-bottom: 0.3rem;
+}
+
+.example-card:nth-child(1) .example-label { color: var(--accent-recruiting); }
+.example-card:nth-child(2) .example-label { color: var(--accent-marketing); }
+.example-card:nth-child(3) .example-label { color: var(--accent-kol); }
+.example-card:nth-child(4) .example-label { color: var(--accent-sales); }
+
+/* ─── ANIMATIONS ─── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ─── RESPONSIVE ─── */
+@media (max-width: 768px) {
+  .sidebar {
+    transform: translateX(-100%);
+  }
+
+  .sidebar.open {
+    transform: translateX(0);
+  }
+
+  .sidebar-overlay.visible {
+    display: block;
+  }
+
+  .sidebar-toggle {
+    display: flex;
+  }
+
+  .main-content {
+    margin-left: 0;
+  }
+
+  .header {
+    padding-left: 3.5rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .hero { padding: 2.5rem 1rem 1rem; }
+  .hero-title { font-size: 2.4rem; }
+  .results-area { padding: 0 1rem 3rem; }
+  .examples { grid-template-columns: 1fr; }
+  .person-card { padding: 1rem; }
+  .card-actions { opacity: 1; max-height: 60px; }
+}
+</style>
+</head>
+<body>
+
+<!-- Sidebar toggle (mobile) -->
+<button class="sidebar-toggle" id="sidebarToggle" aria-label="Toggle menu">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+    <line x1="4" y1="7" x2="20" y2="7"/>
+    <line x1="4" y1="12" x2="20" y2="12"/>
+    <line x1="4" y1="17" x2="20" y2="17"/>
+  </svg>
+</button>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<div class="app-layout">
+
+<!-- Sidebar -->
+<aside class="sidebar" id="sidebar">
+  <a class="sidebar-logo" href="/" onclick="goHome(event)">
+    <div class="logo-wave"></div>
+    <span>WaveHeart</span>
+  </a>
+
+  <nav class="sidebar-nav">
+    <button class="nav-item active" data-page="home" onclick="goHome(event)">
+      <span class="nav-icon">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+          <polyline points="9 22 9 12 15 12 15 22"/>
+        </svg>
+      </span>
+      Home
+    </button>
+    <button class="nav-item" data-page="search" onclick="focusSearch()">
+      <span class="nav-icon">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"/>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+      </span>
+      Search
+    </button>
+
+    <div class="nav-section-label">Scenarios</div>
+    <button class="nav-item" onclick="pickScenario('recruiting')">
+      <span class="nav-icon">&#9733;</span>
+      Recruiting
+    </button>
+    <button class="nav-item" onclick="pickScenario('marketing')">
+      <span class="nav-icon">&#9678;</span>
+      Marketing
+    </button>
+    <button class="nav-item" onclick="pickScenario('kol')">
+      <span class="nav-icon">&#9829;</span>
+      KOL
+    </button>
+    <button class="nav-item" onclick="pickScenario('sales')">
+      <span class="nav-icon">&#9650;</span>
+      Sales
+    </button>
+  </nav>
+
+  <div class="sidebar-footer">
+    <div class="sidebar-footer-text">Powered by PDL<br>1.5B+ profiles</div>
+  </div>
+</aside>
+
+<!-- Main Content -->
+<div class="main-content">
+
+<header class="header">
+  <div class="header-meta" id="headerMeta">PDL Search</div>
+</header>
+
+<!-- Hero / Search -->
+<section class="hero" id="hero">
+  <h1 class="hero-title">Find the right people,<br><em>effortlessly.</em></h1>
+  <p class="hero-subtitle">Describe who you're looking for in natural language. AI parses your intent, searches 1.5B+ profiles, and scores results by relevance.</p>
+
+  <div class="scenarios" id="scenarios">
+    <button class="scenario-pill active" data-scenario="auto">
+      <span class="pill-icon">&#9670;</span> Auto
+    </button>
+    <button class="scenario-pill" data-scenario="recruiting">
+      <span class="pill-icon">&#9733;</span> Recruiting
+    </button>
+    <button class="scenario-pill" data-scenario="marketing">
+      <span class="pill-icon">&#9678;</span> Marketing
+    </button>
+    <button class="scenario-pill" data-scenario="kol">
+      <span class="pill-icon">&#9829;</span> KOL
+    </button>
+    <button class="scenario-pill" data-scenario="sales">
+      <span class="pill-icon">&#9650;</span> Sales
+    </button>
+  </div>
+
+  <div class="search-box" id="searchBox">
+    <textarea class="search-input" id="searchInput"
+      placeholder="Describe who you want to find..."
+      rows="1"></textarea>
+    <button class="search-btn" id="searchBtn" title="Search">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="5" y1="12" x2="19" y2="12"/>
+        <polyline points="12 5 19 12 12 19"/>
+      </svg>
+    </button>
+    <div class="search-loading" id="searchLoading"></div>
+  </div>
+
+  <div class="examples" id="examples">
+    <div class="example-card" data-query="帮我找硅谷会 Python 和机器学习的高级工程师">
+      <div class="example-label">Recruiting</div>
+      Silicon Valley ML engineers with Python
+    </div>
+    <div class="example-card" data-query="找 SaaS 行业的市场总监，200人以上的公司">
+      <div class="example-label">Marketing</div>
+      Marketing directors at SaaS companies
+    </div>
+    <div class="example-card" data-query="找科技领域的内容创作者和博主，在美国">
+      <div class="example-label">KOL</div>
+      Tech content creators in the US
+    </div>
+    <div class="example-card" data-query="找医疗行业 500 人以上公司的 VP 或采购负责人">
+      <div class="example-label">Sales</div>
+      Healthcare VPs at large companies
+    </div>
+  </div>
+</section>
+
+<!-- Results -->
+<section class="results-area" id="resultsArea"></section>
+
+<!-- Close main-content -->
+</div>
+<!-- Close app-layout -->
+</div>
+
+<!-- Enrich Modal -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal" id="modal">
+    <div class="modal-header">
+      <div>
+        <div class="modal-name" id="modalName"></div>
+        <div class="modal-title-co" id="modalTitleCo"></div>
+      </div>
+      <button class="modal-close" id="modalClose">&times;</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+  </div>
+</div>
+
+<script>
+// ─── State ───
+const state = {
+  scenario: 'auto',
+  loading: false,
+  results: null,
+};
+
+// ─── Theme colors per scenario ───
+const SCENARIO_COLORS = {
+  recruiting: { accent: '#4338CA', light: '#EEF2FF', glow: 'rgba(67,56,202,0.08)' },
+  marketing:  { accent: '#0F766E', light: '#F0FDFA', glow: 'rgba(15,118,110,0.08)' },
+  kol:        { accent: '#DB2777', light: '#FDF2F8', glow: 'rgba(219,39,119,0.08)' },
+  sales:      { accent: '#B45309', light: '#FFFBEB', glow: 'rgba(180,83,9,0.08)' },
+  auto:       { accent: '#4338CA', light: '#EEF2FF', glow: 'rgba(67,56,202,0.08)' },
+};
+
+const SCENARIO_LABELS = {
+  recruiting: 'Recruiting',
+  marketing: 'Marketing',
+  kol: 'KOL',
+  sales: 'Sales',
+};
+
+// ─── DOM refs ───
+const hero = document.getElementById('hero');
+const searchInput = document.getElementById('searchInput');
+const searchBtn = document.getElementById('searchBtn');
+const searchLoading = document.getElementById('searchLoading');
+const resultsArea = document.getElementById('resultsArea');
+const modalOverlay = document.getElementById('modalOverlay');
+const modalName = document.getElementById('modalName');
+const modalTitleCo = document.getElementById('modalTitleCo');
+const modalBody = document.getElementById('modalBody');
+const modalClose = document.getElementById('modalClose');
+const headerMeta = document.getElementById('headerMeta');
+
+// ─── Auto-resize textarea ───
+searchInput.addEventListener('input', () => {
+  searchInput.style.height = 'auto';
+  searchInput.style.height = Math.min(searchInput.scrollHeight, 120) + 'px';
+});
+
+// ─── Scenario pills ───
+document.getElementById('scenarios').addEventListener('click', (e) => {
+  const pill = e.target.closest('.scenario-pill');
+  if (!pill) return;
+  document.querySelectorAll('.scenario-pill').forEach(p => p.classList.remove('active'));
+  pill.classList.add('active');
+  state.scenario = pill.dataset.scenario;
+  setTheme(state.scenario);
+});
+
+function setTheme(scenario) {
+  const colors = SCENARIO_COLORS[scenario] || SCENARIO_COLORS.auto;
+  document.documentElement.style.setProperty('--accent', colors.accent);
+  document.documentElement.style.setProperty('--accent-light', colors.light);
+  document.documentElement.style.setProperty('--accent-glow', colors.glow);
+}
+
+// ─── Example cards ───
+document.getElementById('examples').addEventListener('click', (e) => {
+  const card = e.target.closest('.example-card');
+  if (!card) return;
+  searchInput.value = card.dataset.query;
+  searchInput.dispatchEvent(new Event('input'));
+  doSearch();
+});
+
+// ─── Search ───
+searchBtn.addEventListener('click', doSearch);
+searchInput.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    doSearch();
+  }
+});
+
+async function doSearch() {
+  const query = searchInput.value.trim();
+  if (!query || state.loading) return;
+
+  state.loading = true;
+  searchBtn.disabled = true;
+  searchLoading.classList.add('active');
+  hero.classList.add('collapsed');
+  resultsArea.innerHTML = '';
+  setActiveNav('search');
+
+  try {
+    const resp = await fetch('/api/search', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ query, size: 15 }),
+    });
+
+    if (!resp.ok) throw new Error(`Server error: ${resp.status}`);
+    const data = await resp.json();
+    state.results = data;
+
+    // Update scenario theme
+    const detectedScenario = data.scenario || 'recruiting';
+    setTheme(detectedScenario);
+
+    // Highlight the detected pill
+    document.querySelectorAll('.scenario-pill').forEach(p => {
+      p.classList.toggle('active',
+        state.scenario === 'auto'
+          ? p.dataset.scenario === detectedScenario || p.dataset.scenario === 'auto'
+          : p.dataset.scenario === state.scenario
+      );
+    });
+
+    headerMeta.textContent = `${SCENARIO_LABELS[detectedScenario] || detectedScenario} · ${(data.total || 0).toLocaleString()} matches`;
+
+    // Show API-level errors (quota, auth)
+    if (data.error) {
+      resultsArea.innerHTML = `
+        <div class="empty-state">
+          <div class="empty-icon">&#9888;</div>
+          <div class="empty-text">API Error</div>
+          <div class="empty-hint">${escHtml(data.error)}</div>
+        </div>`;
+    } else {
+      renderResults(data);
+    }
+  } catch (err) {
+    resultsArea.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">&#9888;</div>
+        <div class="empty-text">Search failed</div>
+        <div class="empty-hint">${escHtml(err.message)}</div>
+      </div>`;
+  } finally {
+    state.loading = false;
+    searchBtn.disabled = false;
+    searchLoading.classList.remove('active');
+  }
+}
+
+// ─── Render results ───
+function renderResults(data) {
+  const people = data.people || [];
+  let html = '';
+
+  // Meta bar
+  html += `
+    <div class="results-meta">
+      <span class="results-count">${people.length} results · ${(data.total || 0).toLocaleString()} total</span>
+      <span class="results-scenario">${SCENARIO_LABELS[data.scenario] || data.scenario}</span>
+    </div>`;
+
+  // SQL preview
+  if (data.sql) {
+    html += `<div class="results-sql" title="Click to copy" onclick="navigator.clipboard.writeText(this.textContent)">${escHtml(data.sql)}</div>`;
+  }
+
+  // Summary
+  if (data.summary) {
+    html += `<div class="results-summary">${escHtml(data.summary)}</div>`;
+  }
+
+  // Relaxation info
+  if (data.relaxed && data.relax_info) {
+    html += `<div class="narrowing">
+      <div class="narrowing-title">Auto-broadened search</div>
+      <p style="font-size:0.85rem;color:var(--text-secondary)">${escHtml(data.relax_info.explanation || '')}</p>
+    </div>`;
+  }
+
+  // Narrowing suggestions
+  if (data.narrowing) {
+    const suggestions = data.narrowing.suggestions || [];
+    html += `<div class="narrowing">
+      <div class="narrowing-title">Narrow your search</div>
+      <ul class="narrowing-list">
+        ${suggestions.map(s => `<li class="narrowing-item" onclick="appendQuery(this.textContent)">${escHtml(s)}</li>`).join('')}
+      </ul>
+    </div>`;
+  }
+
+  // People cards
+  if (people.length === 0) {
+    html += `
+      <div class="empty-state">
+        <div class="empty-icon">&#128269;</div>
+        <div class="empty-text">No results found</div>
+        <div class="empty-hint">Try broadening your search criteria</div>
+      </div>`;
+  } else {
+    people.forEach((p, i) => {
+      const initials = getInitials(p.name);
+      const avatarBg = getAvatarColor(p.name);
+      const score = p.score || 0;
+      const scoreClass = score >= 7 ? 'score-high' : score >= 5 ? 'score-mid' : 'score-low';
+      const linkedinFull = p.linkedin_url
+        ? (p.linkedin_url.startsWith('http') ? p.linkedin_url : 'https://' + p.linkedin_url)
+        : '';
+
+      html += `
+        <div class="person-card" style="animation-delay:${i * 0.06}s"
+             onclick="this.classList.toggle('expanded')">
+          <div class="card-top">
+            <div class="card-avatar" style="background:${avatarBg}">${initials}</div>
+            <div class="card-identity">
+              <div class="card-name">${escHtml(p.name || 'Unknown')}</div>
+              <div class="card-title">${escHtml(p.title || '')}${p.company ? ' @ <strong>' + escHtml(p.company) + '</strong>' : ''}</div>
+            </div>
+            ${score ? `<div class="card-score"><div class="score-badge ${scoreClass}">${score}</div></div>` : ''}
+          </div>
+          <div class="card-details">
+            ${p.location && p.location !== 'None' ? `<span class="card-tag location">${escHtml(p.location)}</span>` : ''}
+            ${p.company_industry ? `<span class="card-tag industry">${escHtml(p.company_industry)}</span>` : ''}
+            ${p.company_size ? `<span class="card-tag size">${escHtml(p.company_size)}</span>` : ''}
+          </div>
+          ${p.reason ? `<div class="card-reason">${escHtml(p.reason)}</div>` : ''}
+          <div class="card-actions">
+            ${linkedinFull ? `<a href="${linkedinFull}" target="_blank" rel="noopener" class="card-action-btn" onclick="event.stopPropagation()">LinkedIn &nearr;</a>` : ''}
+            ${linkedinFull ? `<button class="card-action-btn primary" onclick="event.stopPropagation();enrichPerson('${escAttr(linkedinFull)}','${escAttr(p.name)}','${escAttr(p.company)}')">View Full Profile</button>` : ''}
+            <span class="card-action-btn" style="margin-left:auto">
+              ${p.has_email ? '&#9993; Email' : ''}${p.has_email && p.has_phone ? ' · ' : ''}${p.has_phone ? '&#9742; Phone' : ''}
+              ${!p.has_email && !p.has_phone ? 'No contact info' : ''}
+            </span>
+          </div>
+        </div>`;
+    });
+  }
+
+  resultsArea.innerHTML = html;
+}
+
+// ─── Enrich (modal) ───
+async function enrichPerson(linkedinUrl, name, company) {
+  modalOverlay.classList.add('visible');
+  modalName.textContent = name || 'Loading...';
+  modalTitleCo.textContent = '';
+  modalBody.innerHTML = `<div class="modal-loading"><div class="spinner"></div>Fetching full profile...</div>`;
+
+  try {
+    const resp = await fetch('/api/enrich', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ linkedin_url: linkedinUrl, name, company }),
+    });
+
+    if (!resp.ok) throw new Error('Enrich failed');
+    const data = await resp.json();
+
+    modalName.textContent = data.name || name;
+    modalTitleCo.textContent = `${data.title || ''} @ ${data.company || ''}`;
+
+    let bodyHtml = '';
+
+    // Location
+    if (data.location) {
+      bodyHtml += `<div class="modal-section">
+        <div class="modal-section-label">Location</div>
+        <div style="font-size:0.9rem">${escHtml(data.location)}</div>
+      </div>`;
+    }
+
+    // Experience
+    if (data.experience && data.experience.length) {
+      bodyHtml += `<div class="modal-section">
+        <div class="modal-section-label">Experience</div>
+        ${data.experience.map(exp => `
+          <div class="modal-exp-item">
+            <div class="modal-exp-role">${escHtml(exp.title)}</div>
+            <div class="modal-exp-co">${escHtml(exp.company)}</div>
+            <div class="modal-exp-dates">${exp.start || '?'} — ${exp.end || 'Present'}${exp.is_primary ? '  (current)' : ''}</div>
+          </div>
+        `).join('')}
+      </div>`;
+    }
+
+    // Education
+    if (data.education && data.education.length) {
+      bodyHtml += `<div class="modal-section">
+        <div class="modal-section-label">Education</div>
+        ${data.education.map(edu => `
+          <div class="modal-exp-item">
+            <div class="modal-exp-role">${escHtml(edu.school)}</div>
+            <div class="modal-exp-co">${(edu.degree || []).join(', ')} ${(edu.majors || []).join(', ')}</div>
+          </div>
+        `).join('')}
+      </div>`;
+    }
+
+    // Skills
+    if (data.skills && data.skills.length) {
+      bodyHtml += `<div class="modal-section">
+        <div class="modal-section-label">Skills</div>
+        <div class="modal-skills">${data.skills.map(s => `<span class="modal-skill">${escHtml(s)}</span>`).join('')}</div>
+      </div>`;
+    }
+
+    // Links
+    const links = [];
+    if (data.linkedin_url) links.push({ label: 'LinkedIn', url: data.linkedin_url });
+    if (data.github_url) links.push({ label: 'GitHub', url: data.github_url });
+    if (data.twitter_url) links.push({ label: 'Twitter/X', url: data.twitter_url });
+
+    if (links.length) {
+      bodyHtml += `<div class="modal-section">
+        <div class="modal-section-label">Links</div>
+        <div class="modal-links">
+          ${links.map(l => {
+            const href = l.url.startsWith('http') ? l.url : 'https://' + l.url;
+            return `<a href="${href}" target="_blank" rel="noopener" class="modal-link">${escHtml(l.label)}: ${escHtml(l.url)}</a>`;
+          }).join('')}
+        </div>
+      </div>`;
+    }
+
+    modalBody.innerHTML = bodyHtml || '<p style="color:var(--text-tertiary)">No additional data available.</p>';
+  } catch (err) {
+    modalBody.innerHTML = `<div class="empty-state" style="padding:2rem 0">
+      <div class="empty-text">Failed to load profile</div>
+      <div class="empty-hint">${err.message}</div>
+    </div>`;
+  }
+}
+
+// Close modal
+modalClose.addEventListener('click', () => modalOverlay.classList.remove('visible'));
+modalOverlay.addEventListener('click', (e) => {
+  if (e.target === modalOverlay) modalOverlay.classList.remove('visible');
+});
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') modalOverlay.classList.remove('visible');
+});
+
+// ─── Helpers ───
+function appendQuery(text) {
+  searchInput.value += ' ' + text;
+  searchInput.focus();
+}
+
+function getInitials(name) {
+  if (!name) return '?';
+  return name.split(' ').map(w => w[0] || '').join('').toUpperCase().slice(0, 2);
+}
+
+const AVATAR_COLORS = [
+  'linear-gradient(135deg, #667eea, #764ba2)',
+  'linear-gradient(135deg, #f093fb, #f5576c)',
+  'linear-gradient(135deg, #4facfe, #00f2fe)',
+  'linear-gradient(135deg, #43e97b, #38f9d7)',
+  'linear-gradient(135deg, #fa709a, #fee140)',
+  'linear-gradient(135deg, #a18cd1, #fbc2eb)',
+  'linear-gradient(135deg, #fccb90, #d57eeb)',
+  'linear-gradient(135deg, #e0c3fc, #8ec5fc)',
+  'linear-gradient(135deg, #f5576c, #ff9a9e)',
+  'linear-gradient(135deg, #0acffe, #495aff)',
+];
+
+function getAvatarColor(name) {
+  if (!name) return AVATAR_COLORS[0];
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
+  return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length];
+}
+
+function escHtml(str) {
+  if (!str) return '';
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function escAttr(str) {
+  return escHtml(str).replace(/'/g, "\\'");
+}
+
+// ─── Sidebar ───
+const sidebar = document.getElementById('sidebar');
+const sidebarToggle = document.getElementById('sidebarToggle');
+const sidebarOverlay = document.getElementById('sidebarOverlay');
+
+sidebarToggle.addEventListener('click', () => {
+  sidebar.classList.toggle('open');
+  sidebarOverlay.classList.toggle('visible');
+});
+
+sidebarOverlay.addEventListener('click', () => {
+  sidebar.classList.remove('open');
+  sidebarOverlay.classList.remove('visible');
+});
+
+function closeSidebarMobile() {
+  if (window.innerWidth <= 768) {
+    sidebar.classList.remove('open');
+    sidebarOverlay.classList.remove('visible');
+  }
+}
+
+function setActiveNav(page) {
+  document.querySelectorAll('.nav-item[data-page]').forEach(n => {
+    n.classList.toggle('active', n.dataset.page === page);
+  });
+}
+
+function goHome(e) {
+  if (e) e.preventDefault();
+  hero.classList.remove('collapsed');
+  resultsArea.innerHTML = '';
+  searchInput.value = '';
+  headerMeta.textContent = 'PDL Search';
+  state.results = null;
+  setTheme('auto');
+  setActiveNav('home');
+  document.querySelectorAll('.scenario-pill').forEach(p => {
+    p.classList.toggle('active', p.dataset.scenario === 'auto');
+  });
+  state.scenario = 'auto';
+  closeSidebarMobile();
+  searchInput.focus();
+}
+
+function focusSearch() {
+  setActiveNav('search');
+  closeSidebarMobile();
+  searchInput.focus();
+}
+
+function pickScenario(scenario) {
+  state.scenario = scenario;
+  setTheme(scenario);
+  document.querySelectorAll('.scenario-pill').forEach(p => {
+    p.classList.toggle('active', p.dataset.scenario === scenario);
+  });
+  closeSidebarMobile();
+  searchInput.focus();
+}
+
+// Focus search on load
+searchInput.focus();
+</script>
+</body>
+</html>

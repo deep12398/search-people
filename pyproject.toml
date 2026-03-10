@@ -1,0 +1,17 @@
+[project]
+name = "search-people"
+version = "0.1.0"
+description = "People search agent powered by Claude Agent SDK and Apollo API"
+requires-python = ">=3.11"
+dependencies = [
+    "claude-agent-sdk",
+    "anthropic",
+    "httpx",
+    "python-dotenv",
+    "fastapi",
+    "uvicorn",
+]
+
+[project.scripts]
+search-people = "src.main:main"
+search-web = "src.web:main"
