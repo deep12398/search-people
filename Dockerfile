@@ -18,5 +18,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy source
 COPY . .
 
-# Railway sets PORT env var
-CMD ["sh", "-c", "uvicorn src.web:app --host 0.0.0.0 --port ${PORT:-8080}"]
+# Railway injects PORT env var at runtime
+ENV PORT=8080
+EXPOSE 8080
+CMD ["sh", "-c", "exec uvicorn src.web:app --host 0.0.0.0 --port $PORT"]
