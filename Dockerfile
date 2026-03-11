@@ -21,4 +21,4 @@ COPY . .
 # Railway injects PORT env var at runtime
 ENV PORT=8080
 EXPOSE 8080
-CMD ["sh", "-c", "exec uvicorn src.web:app --host 0.0.0.0 --port $PORT"]
+CMD ["python", "-c", "import os; port=os.environ.get('PORT','8080'); import uvicorn; uvicorn.run('src.web:app', host='0.0.0.0', port=int(port))"]
