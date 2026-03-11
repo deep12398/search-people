@@ -3,47 +3,51 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>WaveHeart - People Search</title>
+<title>WaveHeart - AI People Search</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300..700;1,9..40,300..700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Open+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 
 :root {
-  --bg: #FAF8F4;
-  --bg-card: #FFFFFF;
-  --bg-elevated: #F3F0EA;
-  --text: #1A1715;
-  --text-secondary: #6B645A;
-  --text-tertiary: #9B9488;
-  --border: #E8E4DD;
-  --border-strong: #D4CFC6;
+  --primary: #2563EB;
+  --primary-dark: #1D4ED8;
+  --primary-light: #EFF6FF;
+  --primary-glow: rgba(37,99,235,0.08);
+  --secondary: #3B82F6;
+  --cta: #F97316;
+  --cta-dark: #EA580C;
+  --cta-light: #FFF7ED;
 
-  /* Scenario accent colors */
-  --accent-recruiting: #4338CA;
+  --bg: #F8FAFC;
+  --bg-white: #FFFFFF;
+  --bg-elevated: #F1F5F9;
+  --text: #1E293B;
+  --text-secondary: #475569;
+  --text-tertiary: #94A3B8;
+  --border: #E2E8F0;
+  --border-strong: #CBD5E1;
+
+  --accent-recruiting: #7C3AED;
   --accent-marketing: #0F766E;
   --accent-kol: #DB2777;
   --accent-sales: #B45309;
 
-  /* Active accent (set by JS) */
-  --accent: var(--accent-recruiting);
-  --accent-light: #EEF2FF;
-  --accent-glow: rgba(67, 56, 202, 0.08);
-
   --radius: 12px;
   --radius-sm: 8px;
   --radius-xs: 6px;
-  --shadow-sm: 0 1px 2px rgba(26,23,21,0.04);
-  --shadow: 0 2px 8px rgba(26,23,21,0.06), 0 1px 2px rgba(26,23,21,0.04);
-  --shadow-lg: 0 8px 32px rgba(26,23,21,0.08), 0 2px 8px rgba(26,23,21,0.04);
-  --shadow-xl: 0 16px 48px rgba(26,23,21,0.10), 0 4px 12px rgba(26,23,21,0.06);
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+  --shadow: 0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06);
+  --shadow-md: 0 4px 6px rgba(0,0,0,0.07), 0 2px 4px rgba(0,0,0,0.06);
+  --shadow-lg: 0 10px 25px rgba(0,0,0,0.08), 0 4px 10px rgba(0,0,0,0.04);
+  --shadow-xl: 0 20px 50px rgba(0,0,0,0.1), 0 8px 16px rgba(0,0,0,0.06);
 
-  --font-display: 'Instrument Serif', Georgia, serif;
-  --font-body: 'DM Sans', -apple-system, sans-serif;
+  --font-heading: 'Poppins', -apple-system, sans-serif;
+  --font-body: 'Open Sans', -apple-system, sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
 
-  --transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  --transition-spring: 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  --transition: 0.2s ease;
+  --transition-slow: 0.35s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 html { font-size: 16px; -webkit-font-smoothing: antialiased; }
@@ -56,17 +60,410 @@ body {
   overflow-x: hidden;
 }
 
-/* ─── LAYOUT: Sidebar + Main ─── */
-.app-layout {
+a { color: inherit; text-decoration: none; }
+button { font-family: var(--font-body); }
+
+/* ═══════════════════════════════════════════════
+   LANDING PAGE
+   ═══════════════════════════════════════════════ */
+
+.landing { display: flex; flex-direction: column; min-height: 100vh; }
+
+/* ── Top Nav ── */
+.top-nav {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(255,255,255,0.92);
+  backdrop-filter: blur(16px) saturate(1.4);
+  border-bottom: 1px solid var(--border);
+  height: 64px;
   display: flex;
-  min-height: 100vh;
+  align-items: center;
+  padding: 0 2rem;
 }
 
-/* ─── SIDEBAR ─── */
-.sidebar {
-  width: 220px;
+.top-nav-inner {
+  max-width: 1200px;
+  width: 100%;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.nav-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  cursor: pointer;
+}
+
+.nav-brand-icon {
+  width: 32px;
+  height: 32px;
+  background: var(--primary);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.nav-brand-icon::after {
+  content: '';
+  position: absolute;
+  bottom: -3px;
+  left: -4px;
+  right: -4px;
+  height: 14px;
+  background: rgba(255,255,255,0.3);
+  border-radius: 50%;
+  animation: wavePulse 3s ease-in-out infinite;
+}
+
+@keyframes wavePulse {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+
+.nav-brand-text {
+  font-family: var(--font-heading);
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -0.02em;
+}
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+}
+
+.nav-link {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: color var(--transition);
+  background: none;
+  border: none;
+  padding: 0;
+}
+
+.nav-link:hover { color: var(--text); }
+
+.nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.5rem 1.25rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition);
+  border: none;
+  white-space: nowrap;
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
+}
+.btn-ghost:hover { border-color: var(--border-strong); color: var(--text); }
+
+.btn-primary {
+  background: var(--primary);
+  color: white;
+  box-shadow: 0 1px 2px rgba(37,99,235,0.3);
+}
+.btn-primary:hover { background: var(--primary-dark); }
+
+.btn-cta {
+  background: var(--cta);
+  color: white;
+  box-shadow: 0 1px 2px rgba(249,115,22,0.3);
+}
+.btn-cta:hover { background: var(--cta-dark); }
+
+.btn-lg {
+  padding: 0.75rem 2rem;
+  font-size: 1rem;
+  border-radius: var(--radius);
+}
+
+/* ── Hero Section ── */
+.hero-section {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem 3rem;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-section::before {
+  content: '';
+  position: absolute;
+  top: -200px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 900px;
+  height: 600px;
+  background: radial-gradient(ellipse, rgba(37,99,235,0.06) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 1rem;
+  background: var(--primary-light);
+  color: var(--primary);
+  border-radius: 100px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  margin-bottom: 2rem;
+  border: 1px solid rgba(37,99,235,0.15);
+}
+
+.hero-badge svg { width: 14px; height: 14px; }
+
+.hero-title {
+  font-family: var(--font-heading);
+  font-size: clamp(2.5rem, 5vw, 3.8rem);
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.03em;
+  color: var(--text);
+  max-width: 800px;
+  margin-bottom: 1.25rem;
+}
+
+.hero-title em {
+  font-style: normal;
+  background: linear-gradient(135deg, var(--primary), #7C3AED);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.hero-subtitle {
+  font-size: 1.15rem;
+  line-height: 1.6;
+  color: var(--text-secondary);
+  max-width: 600px;
+  margin-bottom: 2.5rem;
+}
+
+.hero-cta-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 3rem;
+}
+
+/* ── Landing Search Bar ── */
+.landing-search {
+  width: 100%;
+  max-width: 680px;
+  position: relative;
+  margin-bottom: 3rem;
+}
+
+.landing-search-box {
+  display: flex;
+  align-items: center;
+  background: var(--bg-white);
+  border: 2px solid var(--border);
+  border-radius: 16px;
+  box-shadow: var(--shadow-lg);
+  padding: 0.35rem;
+  transition: all var(--transition);
+}
+
+.landing-search-box:focus-within {
+  border-color: var(--primary);
+  box-shadow: var(--shadow-lg), 0 0 0 4px var(--primary-glow);
+}
+
+.landing-search-input {
+  flex: 1;
+  padding: 0.9rem 1.15rem;
+  border: none;
+  background: transparent;
+  font-family: var(--font-body);
+  font-size: 1rem;
+  color: var(--text);
+  outline: none;
+}
+
+.landing-search-input::placeholder { color: var(--text-tertiary); }
+
+.landing-search-btn {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: var(--primary);
+  border: none;
+  color: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition);
   flex-shrink: 0;
-  background: var(--bg-card);
+}
+
+.landing-search-btn:hover { background: var(--primary-dark); }
+.landing-search-btn svg { width: 20px; height: 20px; }
+
+/* ── Trust Logos ── */
+.trust-section {
+  padding: 2rem 2rem 3rem;
+  text-align: center;
+}
+
+.trust-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-tertiary);
+  margin-bottom: 1.25rem;
+}
+
+.trust-logos {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3rem;
+  flex-wrap: wrap;
+  opacity: 0.4;
+}
+
+.trust-logo {
+  font-family: var(--font-heading);
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -0.02em;
+}
+
+/* ── Features Section ── */
+.features-section {
+  padding: 3rem 2rem 4rem;
+  background: var(--bg-white);
+  border-top: 1px solid var(--border);
+}
+
+.features-inner {
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.features-title {
+  font-family: var(--font-heading);
+  font-size: 1.75rem;
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 0.75rem;
+  letter-spacing: -0.02em;
+}
+
+.features-sub {
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: 1.05rem;
+  margin-bottom: 2.5rem;
+}
+
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+}
+
+.feature-card {
+  padding: 1.75rem;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--bg);
+  transition: all var(--transition);
+}
+
+.feature-card:hover {
+  border-color: var(--border-strong);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+.feature-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1rem;
+  color: white;
+}
+
+.feature-icon svg { width: 22px; height: 22px; }
+
+.feature-card:nth-child(1) .feature-icon { background: linear-gradient(135deg, #2563EB, #3B82F6); }
+.feature-card:nth-child(2) .feature-icon { background: linear-gradient(135deg, #7C3AED, #8B5CF6); }
+.feature-card:nth-child(3) .feature-icon { background: linear-gradient(135deg, #0F766E, #14B8A6); }
+
+.feature-name {
+  font-family: var(--font-heading);
+  font-size: 1.05rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.feature-desc {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+/* ── Landing Footer ── */
+.landing-footer {
+  padding: 2rem;
+  border-top: 1px solid var(--border);
+  text-align: center;
+  font-size: 0.82rem;
+  color: var(--text-tertiary);
+}
+
+/* ═══════════════════════════════════════════════
+   APP PAGE (Search Dashboard)
+   ═══════════════════════════════════════════════ */
+
+.app-page { display: none; min-height: 100vh; }
+.app-page.active { display: flex; }
+
+/* ── App Sidebar ── */
+.app-sidebar {
+  width: 260px;
+  flex-shrink: 0;
+  background: var(--bg-white);
   border-right: 1px solid var(--border);
   position: fixed;
   top: 0;
@@ -75,66 +472,141 @@ body {
   z-index: 150;
   display: flex;
   flex-direction: column;
-  padding: 1.25rem 0;
-  transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow-y: auto;
+  transition: transform var(--transition-slow);
 }
 
-.sidebar-logo {
+.sidebar-header {
+  padding: 1.25rem 1.25rem 1rem;
+  border-bottom: 1px solid var(--border);
   display: flex;
   align-items: center;
-  gap: 0.6rem;
-  padding: 0 1.25rem;
-  margin-bottom: 2rem;
-  text-decoration: none;
+  justify-content: space-between;
+}
+
+.sidebar-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+}
+
+.sidebar-brand-icon {
+  width: 28px;
+  height: 28px;
+  background: var(--primary);
+  border-radius: 8px;
+  position: relative;
+  overflow: hidden;
+}
+
+.sidebar-brand-icon::after {
+  content: '';
+  position: absolute;
+  bottom: -3px;
+  left: -4px;
+  right: -4px;
+  height: 12px;
+  background: rgba(255,255,255,0.3);
+  border-radius: 50%;
+}
+
+.sidebar-brand-name {
+  font-family: var(--font-heading);
+  font-size: 1.1rem;
+  font-weight: 700;
   color: var(--text);
 }
 
-.sidebar-logo .logo-wave {
-  width: 28px;
-  height: 28px;
-  background: var(--accent);
+.sidebar-back-btn {
+  width: 30px;
+  height: 30px;
+  border-radius: var(--radius-xs);
+  border: 1px solid var(--border);
+  background: var(--bg);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  transition: all var(--transition);
+}
+
+.sidebar-back-btn:hover { border-color: var(--border-strong); color: var(--text); }
+.sidebar-back-btn svg { width: 16px; height: 16px; }
+
+/* Account Section */
+.sidebar-account {
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.account-avatar {
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
-  position: relative;
-  overflow: hidden;
+  background: linear-gradient(135deg, var(--primary), #7C3AED);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-family: var(--font-heading);
+  font-size: 0.85rem;
+  font-weight: 600;
   flex-shrink: 0;
 }
 
-.sidebar-logo .logo-wave::after {
-  content: '';
-  position: absolute;
-  bottom: -4px;
-  left: -4px;
-  right: -4px;
-  height: 16px;
-  background: rgba(255,255,255,0.3);
+.account-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.account-name {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.account-plan {
+  font-size: 0.72rem;
+  color: var(--text-tertiary);
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.plan-dot {
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
-  animation: wave 3s ease-in-out infinite;
+  background: #22C55E;
 }
 
-.sidebar-logo span {
-  font-family: var(--font-display);
-  font-size: 1.4rem;
-  letter-spacing: -0.02em;
-}
-
+/* Nav Items */
 .sidebar-nav {
+  flex: 1;
+  padding: 0.75rem 0.75rem;
   display: flex;
   flex-direction: column;
   gap: 2px;
-  padding: 0 0.65rem;
-  flex: 1;
 }
 
-.nav-section-label {
-  font-size: 0.62rem;
+.sidebar-section-label {
+  font-size: 0.65rem;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.1em;
   color: var(--text-tertiary);
-  padding: 1.25rem 0.6rem 0.4rem;
+  padding: 1rem 0.65rem 0.4rem;
 }
 
-.nav-item {
+.sidebar-item {
   display: flex;
   align-items: center;
   gap: 0.65rem;
@@ -145,202 +617,170 @@ body {
   color: var(--text-secondary);
   cursor: pointer;
   transition: all var(--transition);
-  text-decoration: none;
   border: none;
   background: none;
   width: 100%;
   text-align: left;
-  font-family: var(--font-body);
 }
 
-.nav-item:hover {
-  background: var(--bg-elevated);
-  color: var(--text);
-}
+.sidebar-item:hover { background: var(--bg-elevated); color: var(--text); }
 
-.nav-item.active {
-  background: var(--accent-light);
-  color: var(--accent);
+.sidebar-item.active {
+  background: var(--primary-light);
+  color: var(--primary);
   font-weight: 550;
 }
 
-.nav-icon {
+.sidebar-item svg {
   width: 18px;
   height: 18px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.95rem;
   flex-shrink: 0;
-  opacity: 0.75;
+  opacity: 0.7;
 }
 
-.nav-item.active .nav-icon { opacity: 1; }
+.sidebar-item.active svg { opacity: 1; }
 
+.sidebar-item-badge {
+  margin-left: auto;
+  background: var(--bg-elevated);
+  color: var(--text-tertiary);
+  font-size: 0.68rem;
+  font-weight: 600;
+  padding: 0.15rem 0.5rem;
+  border-radius: 100px;
+  font-family: var(--font-mono);
+}
+
+.sidebar-item.active .sidebar-item-badge {
+  background: rgba(37,99,235,0.1);
+  color: var(--primary);
+}
+
+/* Sidebar Footer */
 .sidebar-footer {
   padding: 0.75rem 1.25rem;
   border-top: 1px solid var(--border);
-  margin-top: auto;
 }
 
 .sidebar-footer-text {
-  font-size: 0.68rem;
+  font-size: 0.72rem;
   color: var(--text-tertiary);
   font-family: var(--font-mono);
-  line-height: 1.5;
 }
 
-/* Main content area — offset by sidebar width */
-.main-content {
+/* ── App Main Area ── */
+.app-main {
   flex: 1;
-  margin-left: 220px;
+  margin-left: 260px;
   min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
 
-/* Mobile sidebar toggle */
-.sidebar-toggle {
+/* App Top Bar */
+.app-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(248,250,252,0.92);
+  backdrop-filter: blur(16px) saturate(1.4);
+  border-bottom: 1px solid var(--border);
+  padding: 0 2rem;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.topbar-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.85rem;
+  color: var(--text-tertiary);
+}
+
+.topbar-breadcrumb span { color: var(--text); font-weight: 500; }
+
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+/* Mobile toggle */
+.mobile-toggle {
   display: none;
-  position: fixed;
-  top: 0.85rem;
-  left: 0.85rem;
-  z-index: 200;
   width: 36px;
   height: 36px;
   border-radius: var(--radius-sm);
   border: 1px solid var(--border);
-  background: var(--bg-card);
+  background: var(--bg-white);
   cursor: pointer;
   align-items: center;
   justify-content: center;
-  box-shadow: var(--shadow);
-  transition: all var(--transition);
+  box-shadow: var(--shadow-sm);
+  position: fixed;
+  top: 0.75rem;
+  left: 0.75rem;
+  z-index: 200;
 }
 
-.sidebar-toggle:hover { background: var(--bg-elevated); }
+.mobile-toggle svg { width: 18px; height: 18px; color: var(--text); }
 
-.sidebar-toggle svg {
-  width: 18px;
-  height: 18px;
-  color: var(--text);
-}
-
-/* Sidebar overlay for mobile */
 .sidebar-overlay {
   display: none;
   position: fixed;
   inset: 0;
-  background: rgba(26, 23, 21, 0.3);
+  background: rgba(30,41,59,0.3);
   backdrop-filter: blur(4px);
   z-index: 140;
   opacity: 0;
   transition: opacity 0.3s ease;
 }
 
-.sidebar-overlay.visible {
-  opacity: 1;
+.sidebar-overlay.visible { opacity: 1; }
+
+/* ── Search Area ── */
+.search-area {
+  padding: 2rem 2rem 1rem;
+  max-width: 960px;
+  width: 100%;
 }
 
-/* Noise texture overlay */
-body::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  opacity: 0.3;
-  pointer-events: none;
-  z-index: 9999;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
-}
-
-/* ─── HEADER (inside main-content) ─── */
-.header {
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  background: rgba(250, 248, 244, 0.85);
-  backdrop-filter: blur(20px) saturate(1.2);
-  border-bottom: 1px solid var(--border);
-  padding: 0 2rem;
-  height: 52px;
+.search-header {
   display: flex;
   align-items: center;
-  justify-content: flex-end;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
 }
 
-@keyframes wave {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-4px); }
-}
-
-.header-meta {
-  font-size: 0.75rem;
-  color: var(--text-tertiary);
-  font-family: var(--font-mono);
-}
-
-/* ─── HERO / SEARCH ─── */
-.hero {
-  max-width: 720px;
-  margin: 0 auto;
-  padding: 3.5rem 1.5rem 1rem;
-  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.hero.collapsed {
-  padding-top: 1.5rem;
-  padding-bottom: 0;
-}
-
-.hero-title {
-  font-family: var(--font-display);
-  font-size: 3.2rem;
-  line-height: 1.1;
-  letter-spacing: -0.03em;
-  margin-bottom: 0.75rem;
-  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.hero.collapsed .hero-title {
-  font-size: 0;
-  margin: 0;
-  opacity: 0;
-  height: 0;
-  overflow: hidden;
-}
-
-.hero-subtitle {
-  font-size: 1.05rem;
-  color: var(--text-secondary);
-  line-height: 1.5;
-  margin-bottom: 2rem;
-  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.hero.collapsed .hero-subtitle {
-  font-size: 0;
-  margin: 0;
-  opacity: 0;
-  height: 0;
-  overflow: hidden;
+.search-title {
+  font-family: var(--font-heading);
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
 }
 
 /* Scenario pills */
-.scenarios {
+.app-scenarios {
   display: flex;
   gap: 0.5rem;
-  margin-bottom: 1.25rem;
+  margin-bottom: 1rem;
   flex-wrap: wrap;
-  transition: all 0.4s ease;
 }
 
-.hero.collapsed .scenarios {
-  margin-bottom: 0.75rem;
-}
-
-.scenario-pill {
-  padding: 0.4rem 0.9rem;
+.scenario-chip {
+  padding: 0.35rem 0.85rem;
   border-radius: 100px;
   border: 1.5px solid var(--border);
-  background: var(--bg-card);
+  background: var(--bg-white);
   font-size: 0.82rem;
   font-weight: 500;
   color: var(--text-secondary);
@@ -348,30 +788,16 @@ body::before {
   transition: all var(--transition);
   display: flex;
   align-items: center;
-  gap: 0.4rem;
-  user-select: none;
+  gap: 0.35rem;
 }
 
-.scenario-pill:hover {
-  border-color: var(--border-strong);
-  background: var(--bg-elevated);
-}
+.scenario-chip:hover { border-color: var(--border-strong); background: var(--bg-elevated); }
+.scenario-chip.active { border-color: var(--primary); background: var(--primary-light); color: var(--primary); }
 
-.scenario-pill.active {
-  border-color: var(--accent);
-  background: var(--accent-light);
-  color: var(--accent);
-}
-
-.scenario-pill .pill-icon {
-  font-size: 0.9rem;
-  line-height: 1;
-}
-
-/* Search input */
-.search-box {
+/* Search Box */
+.app-search-box {
   position: relative;
-  background: var(--bg-card);
+  background: var(--bg-white);
   border: 1.5px solid var(--border);
   border-radius: var(--radius);
   box-shadow: var(--shadow);
@@ -379,38 +805,36 @@ body::before {
   overflow: hidden;
 }
 
-.search-box:focus-within {
-  border-color: var(--accent);
-  box-shadow: var(--shadow-lg), 0 0 0 3px var(--accent-glow);
+.app-search-box:focus-within {
+  border-color: var(--primary);
+  box-shadow: var(--shadow-md), 0 0 0 3px var(--primary-glow);
 }
 
-.search-input {
+.app-search-input {
   width: 100%;
-  padding: 1rem 3.5rem 1rem 1.15rem;
+  padding: 0.9rem 3.5rem 0.9rem 1.15rem;
   border: none;
   background: transparent;
   font-family: var(--font-body);
-  font-size: 1rem;
+  font-size: 0.95rem;
   color: var(--text);
   outline: none;
   resize: none;
   line-height: 1.5;
-  min-height: 56px;
+  min-height: 52px;
   max-height: 120px;
 }
 
-.search-input::placeholder {
-  color: var(--text-tertiary);
-}
+.app-search-input::placeholder { color: var(--text-tertiary); }
 
-.search-btn {
+.app-search-btn {
   position: absolute;
-  right: 0.65rem;
-  bottom: 0.65rem;
+  right: 0.6rem;
+  bottom: 0.6rem;
   width: 36px;
   height: 36px;
   border-radius: var(--radius-xs);
-  background: var(--accent);
+  background: var(--primary);
   border: none;
   color: white;
   cursor: pointer;
@@ -420,14 +844,11 @@ body::before {
   transition: all var(--transition);
 }
 
-.search-btn:hover { opacity: 0.85; transform: scale(1.04); }
-.search-btn:active { transform: scale(0.96); }
-.search-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+.app-search-btn:hover { background: var(--primary-dark); }
+.app-search-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.app-search-btn svg { width: 18px; height: 18px; }
 
-.search-btn svg { width: 18px; height: 18px; }
-
-/* Loading bar */
-.search-loading {
+.search-loading-bar {
   position: absolute;
   bottom: 0;
   left: 0;
@@ -439,32 +860,132 @@ body::before {
   transition: opacity 0.3s;
 }
 
-.search-loading.active { opacity: 1; }
+.search-loading-bar.active { opacity: 1; }
 
-.search-loading::after {
+.search-loading-bar::after {
   content: '';
   position: absolute;
   inset: 0;
-  background: var(--accent);
-  animation: loading 1.5s ease-in-out infinite;
+  background: var(--primary);
+  animation: loadSlide 1.5s ease-in-out infinite;
   transform-origin: left;
 }
 
-@keyframes loading {
+@keyframes loadSlide {
   0% { transform: translateX(-100%); }
   50% { transform: translateX(0%); }
   100% { transform: translateX(100%); }
 }
 
-/* ─── RESULTS AREA ─── */
-.results-area {
-  max-width: 720px;
-  margin: 0 auto;
-  padding: 0 1.5rem 4rem;
+/* Chat Thread */
+.chat-thread {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
 }
 
-/* Status bar */
-.results-meta {
+.chat-bubble {
+  max-width: 85%;
+  padding: 0.6rem 0.9rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.88rem;
+  line-height: 1.5;
+  animation: fadeUp 0.3s ease both;
+}
+
+.chat-bubble.user {
+  align-self: flex-end;
+  background: var(--bg-elevated);
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
+}
+
+.chat-bubble.ai {
+  align-self: flex-start;
+  background: var(--bg-white);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--primary);
+  box-shadow: var(--shadow-sm);
+}
+
+.chat-bubble.ai::before {
+  content: 'AI';
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--primary);
+  display: block;
+  margin-bottom: 0.2rem;
+}
+
+/* ── Example Cards (app) ── */
+.app-examples {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+  margin-top: 1.25rem;
+}
+
+.app-example {
+  padding: 0.85rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg-white);
+  cursor: pointer;
+  transition: all var(--transition);
+  font-size: 0.85rem;
+  color: var(--text);
+  line-height: 1.45;
+  position: relative;
+  overflow: hidden;
+}
+
+.app-example::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  transition: width var(--transition);
+}
+
+.app-example:nth-child(1)::before { background: var(--accent-recruiting); }
+.app-example:nth-child(2)::before { background: var(--accent-marketing); }
+.app-example:nth-child(3)::before { background: var(--accent-kol); }
+.app-example:nth-child(4)::before { background: var(--accent-sales); }
+
+.app-example:hover {
+  border-color: var(--border-strong);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+.app-example:hover::before { width: 4px; }
+
+.app-example-label {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 600;
+  margin-bottom: 0.2rem;
+}
+
+.app-example:nth-child(1) .app-example-label { color: var(--accent-recruiting); }
+.app-example:nth-child(2) .app-example-label { color: var(--accent-marketing); }
+.app-example:nth-child(3) .app-example-label { color: var(--accent-kol); }
+.app-example:nth-child(4) .app-example-label { color: var(--accent-sales); }
+
+/* ── Results ── */
+.results-container {
+  padding: 0 2rem 4rem;
+  max-width: 960px;
+  width: 100%;
+}
+
+.results-meta-bar {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -478,13 +999,13 @@ body::before {
   font-family: var(--font-mono);
 }
 
-.results-scenario {
+.results-scenario-tag {
   font-size: 0.72rem;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: var(--accent);
-  background: var(--accent-light);
+  color: var(--primary);
+  background: var(--primary-light);
   padding: 0.25rem 0.6rem;
   border-radius: 100px;
 }
@@ -501,24 +1022,22 @@ body::before {
   font-family: var(--font-mono);
   font-size: 0.68rem;
   color: var(--text-tertiary);
-  background: transparent;
   padding: 0.35rem 0;
   margin-bottom: 0.5rem;
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
-  animation: fadeUp 0.45s ease both;
   cursor: pointer;
   transition: all var(--transition);
-  max-width: 100%;
+  animation: fadeUp 0.45s ease both;
 }
 
 .results-sql:hover { color: var(--text-secondary); }
 .results-sql::before { content: 'SQL: '; font-weight: 600; opacity: 0.5; }
 
-/* Narrowing suggestions */
-.narrowing {
-  background: var(--bg-card);
+/* Narrowing / broadening */
+.suggestion-box {
+  background: var(--bg-white);
   border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 1rem 1.25rem;
@@ -527,45 +1046,48 @@ body::before {
   box-shadow: var(--shadow-sm);
 }
 
-.narrowing-title {
+.suggestion-title {
   font-size: 0.78rem;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  color: var(--accent);
+  color: var(--primary);
   margin-bottom: 0.5rem;
 }
 
-.narrowing-list {
+.suggestion-list {
   list-style: none;
   display: flex;
   flex-direction: column;
-  gap: 0.4rem;
+  gap: 0.35rem;
 }
 
-.narrowing-item {
+.suggestion-item {
   font-size: 0.88rem;
   color: var(--text);
   padding: 0.4rem 0.7rem;
-  background: var(--bg-card);
   border-radius: var(--radius-xs);
   cursor: pointer;
   transition: all var(--transition);
   border: 1px solid transparent;
 }
 
-.narrowing-item:hover {
-  border-color: var(--accent);
+.suggestion-item:hover {
+  border-color: var(--primary);
+  background: var(--primary-light);
   transform: translateX(4px);
 }
 
-/* ─── PERSON CARDS ─── */
-.person-card {
-  background: var(--bg-card);
+/* ── Person Cards (Table-like) ── */
+.person-row {
+  background: var(--bg-white);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: 1.15rem 1.25rem;
-  margin-bottom: 0.75rem;
+  padding: 1rem 1.25rem;
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
   transition: all var(--transition);
   cursor: pointer;
   position: relative;
@@ -573,193 +1095,194 @@ body::before {
   animation: fadeUp 0.5s ease both;
 }
 
-.person-card::before {
+.person-row::before {
   content: '';
   position: absolute;
   left: 0;
   top: 0;
   bottom: 0;
   width: 3px;
-  background: var(--accent);
+  background: var(--primary);
   opacity: 0;
   transition: opacity var(--transition);
 }
 
-.person-card:hover {
+.person-row:hover {
   border-color: var(--border-strong);
-  box-shadow: var(--shadow-lg);
-  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
 }
 
-.person-card:hover::before { opacity: 1; }
+.person-row:hover::before { opacity: 1; }
 
-.card-top {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 1rem;
-  margin-bottom: 0.5rem;
-}
-
-.card-identity { flex: 1; min-width: 0; }
-
-.card-avatar {
-  width: 40px;
-  height: 40px;
-  border-radius: 10px;
+.person-avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: var(--font-display);
-  font-size: 0.95rem;
-  font-weight: 400;
+  font-family: var(--font-heading);
+  font-size: 0.85rem;
+  font-weight: 600;
   color: white;
   flex-shrink: 0;
   letter-spacing: 0.02em;
 }
 
-.card-name {
-  font-family: var(--font-display);
-  font-size: 1.2rem;
-  line-height: 1.25;
-  letter-spacing: -0.01em;
-  text-transform: capitalize;
+.person-info {
+  flex: 1;
+  min-width: 0;
 }
 
-.card-title {
+.person-name {
+  font-family: var(--font-heading);
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--text);
+}
+
+.person-title-co {
   font-size: 0.85rem;
   color: var(--text-secondary);
   line-height: 1.4;
-  margin-top: 0.15rem;
+  margin-top: 0.1rem;
 }
 
-.card-title strong {
+.person-title-co strong {
   color: var(--text);
   font-weight: 600;
 }
 
-.card-details {
+.person-tags {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.4rem;
-  margin-top: 0.65rem;
+  gap: 0.35rem;
+  margin-top: 0.5rem;
 }
 
-.card-tag {
-  font-size: 0.75rem;
-  padding: 0.25rem 0.6rem;
+.person-tag {
+  font-size: 0.72rem;
+  padding: 0.2rem 0.55rem;
   border-radius: 100px;
   background: var(--bg-elevated);
   color: var(--text-secondary);
   border: 1px solid var(--border);
   white-space: nowrap;
-  font-weight: 450;
+  font-weight: 500;
 }
 
-.card-tag.location { color: #1D4ED8; background: #EFF6FF; border-color: #DBEAFE; }
-.card-tag.industry { color: #7C3AED; background: #F5F3FF; border-color: #EDE9FE; }
-.card-tag.size { color: #0F766E; background: #F0FDFA; border-color: #CCFBF1; }
+.person-tag.loc { color: #1D4ED8; background: #EFF6FF; border-color: #DBEAFE; }
+.person-tag.ind { color: #7C3AED; background: #F5F3FF; border-color: #EDE9FE; }
+.person-tag.sz  { color: #0F766E; background: #F0FDFA; border-color: #CCFBF1; }
 
-.card-score {
+.person-reason {
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  margin-top: 0.45rem;
+  line-height: 1.5;
+  padding: 0.35rem 0.65rem;
+  background: var(--bg-elevated);
+  border-radius: var(--radius-xs);
+  border-left: 2px solid var(--primary);
+}
+
+.person-right {
   display: flex;
-  align-items: center;
+  flex-direction: column;
+  align-items: flex-end;
   gap: 0.5rem;
   flex-shrink: 0;
 }
 
-.score-badge {
-  min-width: 38px;
-  height: 38px;
+.person-score {
+  min-width: 36px;
+  height: 36px;
   border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
   font-family: var(--font-mono);
-  font-size: 0.9rem;
-  font-weight: 600;
+  font-size: 0.88rem;
+  font-weight: 700;
   color: white;
-  position: relative;
 }
 
-.score-badge::after {
+.person-score::after {
   content: '/10';
-  font-size: 0.55rem;
+  font-size: 0.5rem;
   opacity: 0.7;
   font-weight: 400;
   margin-left: 1px;
 }
 
 .score-high { background: linear-gradient(135deg, #16A34A, #15803D); }
-.score-mid { background: linear-gradient(135deg, #EAB308, #CA8A04); }
-.score-low { background: linear-gradient(135deg, #9B9488, #78716C); }
+.score-mid  { background: linear-gradient(135deg, #EAB308, #CA8A04); }
+.score-low  { background: linear-gradient(135deg, #94A3B8, #64748B); }
 
-.card-reason {
-  font-size: 0.84rem;
-  color: var(--text-secondary);
-  margin-top: 0.6rem;
-  line-height: 1.5;
-  padding: 0.45rem 0.7rem;
-  background: var(--bg-elevated);
-  border-radius: var(--radius-xs);
-  border-left: 2px solid var(--accent);
-}
-
-.card-actions {
+.person-actions {
   display: flex;
-  gap: 0.5rem;
-  margin-top: 0.75rem;
-  padding-top: 0.65rem;
-  border-top: 1px solid var(--border);
-  opacity: 0;
-  max-height: 0;
-  overflow: hidden;
-  transition: all 0.3s ease;
+  gap: 0.4rem;
 }
 
-.person-card:hover .card-actions,
-.person-card.expanded .card-actions {
-  opacity: 1;
-  max-height: 60px;
-}
-
-.card-action-btn {
+.action-btn {
   font-family: var(--font-body);
-  font-size: 0.76rem;
+  font-size: 0.75rem;
   font-weight: 500;
-  padding: 0.35rem 0.7rem;
+  padding: 0.3rem 0.65rem;
   border-radius: var(--radius-xs);
   border: 1px solid var(--border);
-  background: var(--bg-card);
+  background: var(--bg-white);
   color: var(--text-secondary);
   cursor: pointer;
   transition: all var(--transition);
-  text-decoration: none;
   display: inline-flex;
   align-items: center;
-  gap: 0.3rem;
+  gap: 0.25rem;
+  text-decoration: none;
 }
 
-.card-action-btn:hover {
-  border-color: var(--accent);
-  color: var(--accent);
-  background: var(--accent-light);
+.action-btn:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+  background: var(--primary-light);
 }
 
-.card-action-btn.primary {
-  background: var(--accent);
-  border-color: var(--accent);
+.action-btn.reveal {
+  background: var(--primary);
+  border-color: var(--primary);
   color: white;
 }
 
-.card-action-btn.primary:hover { opacity: 0.85; }
+.action-btn.reveal:hover { background: var(--primary-dark); }
 
-/* ─── ENRICH MODAL ─── */
+/* ── Empty State ── */
+.empty-state {
+  text-align: center;
+  padding: 4rem 2rem;
+  color: var(--text-tertiary);
+  animation: fadeUp 0.5s ease both;
+}
+
+.empty-icon { font-size: 2.5rem; margin-bottom: 0.75rem; opacity: 0.5; }
+
+.empty-text {
+  font-family: var(--font-heading);
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 0.35rem;
+}
+
+.empty-hint { font-size: 0.85rem; }
+
+/* ── Enrich Modal ── */
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(26, 23, 21, 0.4);
+  background: rgba(30,41,59,0.4);
   backdrop-filter: blur(8px);
-  z-index: 200;
+  z-index: 300;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -769,27 +1292,22 @@ body::before {
   transition: opacity 0.3s ease;
 }
 
-.modal-overlay.visible {
-  opacity: 1;
-  pointer-events: auto;
-}
+.modal-overlay.visible { opacity: 1; pointer-events: auto; }
 
 .modal {
-  background: var(--bg-card);
-  border-radius: calc(var(--radius) + 4px);
+  background: var(--bg-white);
+  border-radius: 16px;
   box-shadow: var(--shadow-xl);
   max-width: 560px;
   width: 100%;
   max-height: 85vh;
   overflow-y: auto;
-  transform: translateY(16px) scale(0.97);
+  transform: translateY(12px) scale(0.97);
   transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
   border: 1px solid var(--border);
 }
 
-.modal-overlay.visible .modal {
-  transform: translateY(0) scale(1);
-}
+.modal-overlay.visible .modal { transform: translateY(0) scale(1); }
 
 .modal-header {
   padding: 1.25rem 1.5rem 0;
@@ -808,7 +1326,7 @@ body::before {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1rem;
+  font-size: 1.1rem;
   color: var(--text-secondary);
   transition: all var(--transition);
   flex-shrink: 0;
@@ -819,21 +1337,19 @@ body::before {
 .modal-body { padding: 1rem 1.5rem 1.5rem; }
 
 .modal-name {
-  font-family: var(--font-display);
-  font-size: 1.6rem;
+  font-family: var(--font-heading);
+  font-size: 1.5rem;
+  font-weight: 700;
   letter-spacing: -0.02em;
-  text-transform: capitalize;
 }
 
 .modal-title-co {
   font-size: 0.95rem;
   color: var(--text-secondary);
-  margin-top: 0.25rem;
+  margin-top: 0.2rem;
 }
 
-.modal-section {
-  margin-top: 1.25rem;
-}
+.modal-section { margin-top: 1.25rem; }
 
 .modal-section-label {
   font-size: 0.7rem;
@@ -851,40 +1367,26 @@ body::before {
 }
 
 .modal-exp-item:last-child { border: none; }
-
 .modal-exp-role { font-weight: 600; color: var(--text); }
 .modal-exp-co { color: var(--text-secondary); }
 .modal-exp-dates { font-size: 0.75rem; color: var(--text-tertiary); font-family: var(--font-mono); }
 
-.modal-skills {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.35rem;
-}
-
+.modal-skills { display: flex; flex-wrap: wrap; gap: 0.35rem; }
 .modal-skill {
   font-size: 0.75rem;
   padding: 0.25rem 0.6rem;
   border-radius: 100px;
-  background: var(--accent-light);
-  color: var(--accent);
-  border: 1px solid transparent;
+  background: var(--primary-light);
+  color: var(--primary);
 }
 
-.modal-links {
-  display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
-}
-
+.modal-links { display: flex; flex-direction: column; gap: 0.35rem; }
 .modal-link {
   font-size: 0.82rem;
-  color: var(--accent);
-  text-decoration: none;
+  color: var(--primary);
   font-family: var(--font-mono);
   transition: opacity var(--transition);
 }
-
 .modal-link:hover { opacity: 0.7; }
 
 .modal-loading {
@@ -898,339 +1400,377 @@ body::before {
   width: 24px;
   height: 24px;
   border: 2px solid var(--border);
-  border-top-color: var(--accent);
+  border-top-color: var(--primary);
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
   margin: 0 auto 0.75rem;
 }
 
 @keyframes spin { to { transform: rotate(360deg); } }
-
-/* ─── EMPTY STATE ─── */
-.empty-state {
-  text-align: center;
-  padding: 4rem 2rem;
-  color: var(--text-tertiary);
-  animation: fadeUp 0.5s ease both;
-}
-
-.empty-icon {
-  font-size: 2.5rem;
-  margin-bottom: 0.75rem;
-  opacity: 0.5;
-}
-
-.empty-text {
-  font-family: var(--font-display);
-  font-size: 1.2rem;
-  color: var(--text-secondary);
-  margin-bottom: 0.35rem;
-}
-
-.empty-hint {
-  font-size: 0.85rem;
-}
-
-/* ─── CHAT BUBBLES ─── */
-.chat-thread {
-  margin-top: 0.75rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  animation: fadeUp 0.35s ease both;
-}
-
-.chat-bubble {
-  max-width: 88%;
-  padding: 0.6rem 0.9rem;
-  border-radius: var(--radius-sm);
-  font-size: 0.875rem;
-  line-height: 1.5;
-}
-
-.chat-bubble.user {
-  align-self: flex-end;
-  background: var(--bg-elevated);
-  color: var(--text-secondary);
-  border: 1px solid var(--border);
-}
-
-.chat-bubble.ai {
-  align-self: flex-start;
-  background: var(--bg-card);
-  color: var(--text);
-  border: 1px solid var(--border);
-  border-left: 2.5px solid var(--accent);
-  box-shadow: var(--shadow-sm);
-}
-
-.chat-bubble.ai::before {
-  content: 'AI  ';
-  font-size: 0.65rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--accent);
-  display: block;
-  margin-bottom: 0.2rem;
-}
-
-/* ─── EXAMPLE QUERIES ─── */
-.examples {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.5rem;
-  margin-top: 1.5rem;
-  transition: all 0.5s ease;
-}
-
-.hero.collapsed .examples {
-  height: 0;
-  margin: 0;
-  opacity: 0;
-  overflow: hidden;
-}
-
-.example-card {
-  padding: 0.85rem 1rem;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  background: var(--bg-card);
-  cursor: pointer;
-  transition: all var(--transition);
-  font-size: 0.85rem;
-  color: var(--text);
-  line-height: 1.45;
-  position: relative;
-  overflow: hidden;
-}
-
-.example-card::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: 3px;
-  transition: width var(--transition);
-}
-
-.example-card:nth-child(1)::before { background: var(--accent-recruiting); }
-.example-card:nth-child(2)::before { background: var(--accent-marketing); }
-.example-card:nth-child(3)::before { background: var(--accent-kol); }
-.example-card:nth-child(4)::before { background: var(--accent-sales); }
-
-.example-card:hover {
-  border-color: var(--border-strong);
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-lg);
-}
-
-.example-card:hover::before { width: 4px; }
-
-.example-label {
-  font-size: 0.65rem;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  font-weight: 600;
-  margin-bottom: 0.3rem;
-}
-
-.example-card:nth-child(1) .example-label { color: var(--accent-recruiting); }
-.example-card:nth-child(2) .example-label { color: var(--accent-marketing); }
-.example-card:nth-child(3) .example-label { color: var(--accent-kol); }
-.example-card:nth-child(4) .example-label { color: var(--accent-sales); }
-
-/* ─── ANIMATIONS ─── */
 @keyframes fadeUp {
-  from { opacity: 0; transform: translateY(12px); }
+  from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* ─── RESPONSIVE ─── */
-@media (max-width: 768px) {
-  .sidebar {
-    transform: translateX(-100%);
-  }
-
-  .sidebar.open {
-    transform: translateX(0);
-  }
-
-  .sidebar-overlay.visible {
-    display: block;
-  }
-
-  .sidebar-toggle {
-    display: flex;
-  }
-
-  .main-content {
-    margin-left: 0;
-  }
-
-  .header {
-    padding-left: 3.5rem;
-  }
+/* ── History & Favorites (Sidebar Panels) ── */
+.sidebar-panel {
+  padding: 0.5rem 0.75rem;
 }
 
-@media (max-width: 640px) {
-  .hero { padding: 2.5rem 1rem 1rem; }
-  .hero-title { font-size: 2.4rem; }
-  .results-area { padding: 0 1rem 3rem; }
-  .examples { grid-template-columns: 1fr; }
-  .person-card { padding: 1rem; }
-  .card-actions { opacity: 1; max-height: 60px; }
+.sidebar-panel-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.45rem 0.65rem;
+  border-radius: var(--radius-xs);
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all var(--transition);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.sidebar-panel-item:hover {
+  background: var(--bg-elevated);
+  color: var(--text);
+}
+
+.sidebar-panel-item svg {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  opacity: 0.5;
+}
+
+.sidebar-empty {
+  padding: 0.75rem 0.65rem;
+  font-size: 0.78rem;
+  color: var(--text-tertiary);
+  font-style: italic;
+}
+
+/* ═══════════════════════════════════════════════
+   RESPONSIVE
+   ═══════════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+  .app-sidebar { transform: translateX(-100%); }
+  .app-sidebar.open { transform: translateX(0); }
+  .sidebar-overlay.visible { display: block; }
+  .mobile-toggle { display: flex; }
+  .app-main { margin-left: 0; }
+  .app-topbar { padding-left: 3.5rem; }
+
+  .nav-links { display: none; }
+  .hero-title { font-size: 2.2rem; }
+  .hero-cta-row { flex-direction: column; }
+  .features-grid { grid-template-columns: 1fr; }
+  .app-examples { grid-template-columns: 1fr; }
+  .person-row { flex-direction: column; }
+  .person-right { flex-direction: row; align-items: center; width: 100%; justify-content: flex-end; }
+}
+
+@media (max-width: 480px) {
+  .top-nav { padding: 0 1rem; }
+  .hero-section { padding: 2.5rem 1rem 2rem; }
+  .landing-search-box { border-radius: 12px; }
+  .search-area { padding: 1.5rem 1rem 1rem; }
+  .results-container { padding: 0 1rem 3rem; }
 }
 </style>
 </head>
 <body>
 
-<!-- Sidebar toggle (mobile) -->
-<button class="sidebar-toggle" id="sidebarToggle" aria-label="Toggle menu">
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-    <line x1="4" y1="7" x2="20" y2="7"/>
-    <line x1="4" y1="12" x2="20" y2="12"/>
-    <line x1="4" y1="17" x2="20" y2="17"/>
-  </svg>
-</button>
-<div class="sidebar-overlay" id="sidebarOverlay"></div>
+<!-- ═══════════════════════════════════════
+     PAGE 1: LANDING
+     ═══════════════════════════════════════ -->
+<div class="landing" id="landingPage">
 
-<div class="app-layout">
+  <!-- Top Nav -->
+  <nav class="top-nav">
+    <div class="top-nav-inner">
+      <div class="nav-brand" onclick="showLanding()">
+        <div class="nav-brand-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round">
+            <path d="M2 12c2-3 5-5 10-5s8 2 10 5"/>
+            <path d="M2 17c2-3 5-5 10-5s8 2 10 5"/>
+          </svg>
+        </div>
+        <span class="nav-brand-text">WaveHeart</span>
+      </div>
 
-<!-- Sidebar -->
-<aside class="sidebar" id="sidebar">
-  <a class="sidebar-logo" href="/" onclick="goHome(event)">
-    <div class="logo-wave"></div>
-    <span>WaveHeart</span>
-  </a>
+      <div class="nav-links">
+        <button class="nav-link">Features</button>
+        <button class="nav-link">Pricing</button>
+        <button class="nav-link">Resources</button>
+      </div>
 
-  <nav class="sidebar-nav">
-    <button class="nav-item active" data-page="home" onclick="goHome(event)">
-      <span class="nav-icon">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-          <polyline points="9 22 9 12 15 12 15 22"/>
-        </svg>
-      </span>
-      Home
-    </button>
-    <button class="nav-item" data-page="search" onclick="focusSearch()">
-      <span class="nav-icon">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="11" cy="11" r="8"/>
-          <line x1="21" y1="21" x2="16.65" y2="16.65"/>
-        </svg>
-      </span>
-      Search
-    </button>
-
-    <div class="nav-section-label">Scenarios</div>
-    <button class="nav-item" onclick="pickScenario('recruiting')">
-      <span class="nav-icon">&#9733;</span>
-      Recruiting
-    </button>
-    <button class="nav-item" onclick="pickScenario('marketing')">
-      <span class="nav-icon">&#9678;</span>
-      Marketing
-    </button>
-    <button class="nav-item" onclick="pickScenario('kol')">
-      <span class="nav-icon">&#9829;</span>
-      KOL
-    </button>
-    <button class="nav-item" onclick="pickScenario('sales')">
-      <span class="nav-icon">&#9650;</span>
-      Sales
-    </button>
+      <div class="nav-actions">
+        <button class="btn btn-ghost" onclick="showApp()">Sign In</button>
+        <button class="btn btn-primary" onclick="showApp()">Try for Free</button>
+      </div>
+    </div>
   </nav>
 
-  <div class="sidebar-footer">
-    <div class="sidebar-footer-text">Powered by PDL<br>1.5B+ profiles</div>
-  </div>
-</aside>
-
-<!-- Main Content -->
-<div class="main-content">
-
-<header class="header">
-  <div style="display:flex;align-items:center;gap:0.75rem">
-    <button id="demoBtn" onclick="runDemo()" style="
-      font-family:var(--font-body);font-size:0.75rem;font-weight:500;
-      padding:0.3rem 0.75rem;border-radius:100px;cursor:pointer;
-      border:1.5px dashed var(--border-strong);background:transparent;
-      color:var(--text-tertiary);transition:all var(--transition);
-    " onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'"
-       onmouseout="this.style.borderColor='var(--border-strong)';this.style.color='var(--text-tertiary)'">
-      ▶ Demo
-    </button>
-    <div class="header-meta" id="headerMeta">PDL Search</div>
-  </div>
-</header>
-
-<!-- Hero / Search -->
-<section class="hero" id="hero">
-  <h1 class="hero-title">Find the right people,<br><em>effortlessly.</em></h1>
-  <p class="hero-subtitle">Describe who you're looking for in natural language. AI parses your intent, searches 1.5B+ profiles, and scores results by relevance.</p>
-
-  <div class="scenarios" id="scenarios">
-    <button class="scenario-pill active" data-scenario="auto">
-      <span class="pill-icon">&#9670;</span> Auto
-    </button>
-    <button class="scenario-pill" data-scenario="recruiting">
-      <span class="pill-icon">&#9733;</span> Recruiting
-    </button>
-    <button class="scenario-pill" data-scenario="marketing">
-      <span class="pill-icon">&#9678;</span> Marketing
-    </button>
-    <button class="scenario-pill" data-scenario="kol">
-      <span class="pill-icon">&#9829;</span> KOL
-    </button>
-    <button class="scenario-pill" data-scenario="sales">
-      <span class="pill-icon">&#9650;</span> Sales
-    </button>
-  </div>
-
-  <div class="search-box" id="searchBox">
-    <textarea class="search-input" id="searchInput"
-      placeholder="Describe who you want to find..."
-      rows="1"></textarea>
-    <button class="search-btn" id="searchBtn" title="Search">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-        <line x1="5" y1="12" x2="19" y2="12"/>
-        <polyline points="12 5 19 12 12 19"/>
-      </svg>
-    </button>
-    <div class="search-loading" id="searchLoading"></div>
-  </div>
-
-  <div id="chatThread"></div>
-
-  <div class="examples" id="examples">
-    <div class="example-card" data-query="帮我找硅谷会 Python 和机器学习的高级工程师">
-      <div class="example-label">Recruiting</div>
-      Silicon Valley ML engineers with Python
+  <!-- Hero -->
+  <section class="hero-section">
+    <div class="hero-badge">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+      AI-Powered People Intelligence
     </div>
-    <div class="example-card" data-query="找 SaaS 行业的市场总监，200人以上的公司">
-      <div class="example-label">Marketing</div>
-      Marketing directors at SaaS companies
+
+    <h1 class="hero-title">Find the right people,<br><em>effortlessly.</em></h1>
+
+    <p class="hero-subtitle">
+      Describe who you're looking for in natural language. AI understands your intent, searches 1.5B+ profiles, and scores every result by relevance.
+    </p>
+
+    <div class="hero-cta-row">
+      <button class="btn btn-primary btn-lg" onclick="showApp()">Start Searching</button>
+      <button class="btn btn-ghost btn-lg" id="landingDemoBtn" onclick="showApp(); setTimeout(runDemo, 400)">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polygon points="5 3 19 12 5 21"/></svg>
+        Watch Demo
+      </button>
     </div>
-    <div class="example-card" data-query="找科技领域的内容创作者和博主，在美国">
-      <div class="example-label">KOL</div>
-      Tech content creators in the US
+
+    <!-- Search bar on landing too -->
+    <div class="landing-search">
+      <div class="landing-search-box">
+        <input class="landing-search-input" id="landingSearchInput"
+          placeholder="Try: Senior ML engineers in Silicon Valley for recruiting..."
+          autocomplete="off">
+        <button class="landing-search-btn" onclick="landingDoSearch()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"/>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+        </button>
+      </div>
     </div>
-    <div class="example-card" data-query="找医疗行业 500 人以上公司的 VP 或采购负责人">
-      <div class="example-label">Sales</div>
-      Healthcare VPs at large companies
+  </section>
+
+  <!-- Trust Section -->
+  <div class="trust-section">
+    <div class="trust-label">Powered by leading data providers</div>
+    <div class="trust-logos">
+      <span class="trust-logo">People Data Labs</span>
+      <span class="trust-logo">Apollo</span>
+      <span class="trust-logo">LinkedIn</span>
+      <span class="trust-logo">Clearbit</span>
+      <span class="trust-logo">ZoomInfo</span>
     </div>
   </div>
-</section>
 
-<!-- Results -->
-<section class="results-area" id="resultsArea"></section>
+  <!-- Features -->
+  <section class="features-section">
+    <div class="features-inner">
+      <h2 class="features-title">How it works</h2>
+      <p class="features-sub">Three steps from natural language to qualified leads</p>
 
-<!-- Close main-content -->
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          </div>
+          <div class="feature-name">Natural Language Search</div>
+          <div class="feature-desc">Just describe who you need. Our AI parses your intent and builds precise database queries automatically.</div>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          </div>
+          <div class="feature-name">Smart Intent Discovery</div>
+          <div class="feature-desc">If your query is vague, AI asks smart follow-up questions to narrow down exactly who you're looking for.</div>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
+          </div>
+          <div class="feature-name">Scored & Summarized</div>
+          <div class="feature-desc">Results are scored 1-10 for relevance with AI-generated summaries explaining why each person matches.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="landing-footer">
+    WaveHeart &copy; 2026. Built with AI for smarter people discovery.
+  </footer>
 </div>
-<!-- Close app-layout -->
+
+<!-- ═══════════════════════════════════════
+     PAGE 2: APP (Search Dashboard)
+     ═══════════════════════════════════════ -->
+<div class="app-page" id="appPage">
+
+  <!-- Mobile toggle -->
+  <button class="mobile-toggle" id="mobileToggle" aria-label="Menu">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+      <line x1="4" y1="7" x2="20" y2="7"/>
+      <line x1="4" y1="12" x2="20" y2="12"/>
+      <line x1="4" y1="17" x2="20" y2="17"/>
+    </svg>
+  </button>
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+  <!-- Sidebar -->
+  <aside class="app-sidebar" id="appSidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-brand" onclick="showLanding()">
+        <div class="sidebar-brand-icon"></div>
+        <span class="sidebar-brand-name">WaveHeart</span>
+      </div>
+      <button class="sidebar-back-btn" onclick="showLanding()" title="Back to home">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+    </div>
+
+    <!-- Account -->
+    <div class="sidebar-account">
+      <div class="account-avatar">U</div>
+      <div class="account-info">
+        <div class="account-name">Demo User</div>
+        <div class="account-plan"><span class="plan-dot"></span> Free Plan</div>
+      </div>
+    </div>
+
+    <!-- Nav -->
+    <nav class="sidebar-nav">
+      <button class="sidebar-item active" data-nav="search" onclick="navTo('search')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        Search
+      </button>
+
+      <button class="sidebar-item" data-nav="history" onclick="navTo('history')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        History
+        <span class="sidebar-item-badge" id="historyCount">0</span>
+      </button>
+
+      <button class="sidebar-item" data-nav="favorites" onclick="navTo('favorites')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+        Favorites
+        <span class="sidebar-item-badge" id="favCount">0</span>
+      </button>
+
+      <div class="sidebar-section-label">Scenarios</div>
+
+      <button class="sidebar-item" onclick="pickScenario('recruiting')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
+        Recruiting
+      </button>
+
+      <button class="sidebar-item" onclick="pickScenario('marketing')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+        Marketing
+      </button>
+
+      <button class="sidebar-item" onclick="pickScenario('kol')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        KOL
+      </button>
+
+      <button class="sidebar-item" onclick="pickScenario('sales')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+        Sales
+      </button>
+
+      <!-- History Panel -->
+      <div class="sidebar-section-label">Recent Searches</div>
+      <div class="sidebar-panel" id="historyPanel">
+        <div class="sidebar-empty">No search history yet</div>
+      </div>
+
+      <!-- Favorites Panel -->
+      <div class="sidebar-section-label">Saved People</div>
+      <div class="sidebar-panel" id="favoritesPanel">
+        <div class="sidebar-empty">No favorites yet</div>
+      </div>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="sidebar-footer-text">Powered by PDL &middot; 1.5B+ profiles</div>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <div class="app-main">
+    <header class="app-topbar">
+      <div class="topbar-left">
+        <div class="topbar-breadcrumb">
+          WaveHeart <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+          <span id="topbarTitle">Search</span>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <button class="btn btn-ghost" id="demoBtn" onclick="runDemo()" style="font-size:0.78rem;padding:0.3rem 0.75rem">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polygon points="5 3 19 12 5 21"/></svg>
+          Demo
+        </button>
+        <span style="font-size:0.78rem;color:var(--text-tertiary);font-family:var(--font-mono)" id="headerMeta">PDL Search</span>
+      </div>
+    </header>
+
+    <!-- Search Section -->
+    <div class="search-area" id="searchArea">
+      <div class="search-header">
+        <h2 class="search-title" id="searchPageTitle">Search People</h2>
+      </div>
+
+      <!-- Scenario Chips -->
+      <div class="app-scenarios" id="appScenarios">
+        <button class="scenario-chip active" data-scenario="auto">Auto</button>
+        <button class="scenario-chip" data-scenario="recruiting">Recruiting</button>
+        <button class="scenario-chip" data-scenario="marketing">Marketing</button>
+        <button class="scenario-chip" data-scenario="kol">KOL</button>
+        <button class="scenario-chip" data-scenario="sales">Sales</button>
+      </div>
+
+      <!-- Search Input -->
+      <div class="app-search-box" id="appSearchBox">
+        <textarea class="app-search-input" id="searchInput"
+          placeholder="Describe who you want to find..."
+          rows="1"></textarea>
+        <button class="app-search-btn" id="searchBtn" title="Search">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="5" y1="12" x2="19" y2="12"/>
+            <polyline points="12 5 19 12 12 19"/>
+          </svg>
+        </button>
+        <div class="search-loading-bar" id="searchLoading"></div>
+      </div>
+
+      <!-- Chat Thread (for follow-up questions) -->
+      <div id="chatThread"></div>
+
+      <!-- Example Cards -->
+      <div class="app-examples" id="examples">
+        <div class="app-example" data-query="帮我找硅谷会 Python 和机器学习的高级工程师">
+          <div class="app-example-label">Recruiting</div>
+          Silicon Valley ML engineers with Python
+        </div>
+        <div class="app-example" data-query="找 SaaS 行业的市场总监，200人以上的公司">
+          <div class="app-example-label">Marketing</div>
+          Marketing directors at SaaS companies
+        </div>
+        <div class="app-example" data-query="找科技领域的内容创作者和博主，在美国">
+          <div class="app-example-label">KOL</div>
+          Tech content creators in the US
+        </div>
+        <div class="app-example" data-query="找医疗行业 500 人以上公司的 VP 或采购负责人">
+          <div class="app-example-label">Sales</div>
+          Healthcare VPs at large companies
+        </div>
+      </div>
+    </div>
+
+    <!-- Results -->
+    <div class="results-container" id="resultsArea"></div>
+  </div>
 </div>
 
 <!-- Enrich Modal -->
@@ -1248,21 +1788,17 @@ body::before {
 </div>
 
 <script>
-// ─── State ───
+// ═══════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════
 const state = {
   scenario: 'auto',
   loading: false,
   results: null,
-  sessionId: '',  // Agent SDK session ID
-};
-
-// ─── Theme colors per scenario ───
-const SCENARIO_COLORS = {
-  recruiting: { accent: '#4338CA', light: '#EEF2FF', glow: 'rgba(67,56,202,0.08)' },
-  marketing:  { accent: '#0F766E', light: '#F0FDFA', glow: 'rgba(15,118,110,0.08)' },
-  kol:        { accent: '#DB2777', light: '#FDF2F8', glow: 'rgba(219,39,119,0.08)' },
-  sales:      { accent: '#B45309', light: '#FFFBEB', glow: 'rgba(180,83,9,0.08)' },
-  auto:       { accent: '#4338CA', light: '#EEF2FF', glow: 'rgba(67,56,202,0.08)' },
+  sessionId: '',
+  searchHistory: JSON.parse(localStorage.getItem('wh_history') || '[]'),
+  favorites: JSON.parse(localStorage.getItem('wh_favorites') || '[]'),
+  page: 'landing', // 'landing' or 'app'
 };
 
 const SCENARIO_LABELS = {
@@ -1272,59 +1808,128 @@ const SCENARIO_LABELS = {
   sales: 'Sales',
 };
 
-// ─── DOM refs ───
-const hero = document.getElementById('hero');
+// ═══════════════════════════════════════
+// DOM REFS
+// ═══════════════════════════════════════
+const landingPage = document.getElementById('landingPage');
+const appPage = document.getElementById('appPage');
 const searchInput = document.getElementById('searchInput');
 const searchBtn = document.getElementById('searchBtn');
 const searchLoading = document.getElementById('searchLoading');
 const resultsArea = document.getElementById('resultsArea');
+const chatThread = document.getElementById('chatThread');
+const headerMeta = document.getElementById('headerMeta');
+const topbarTitle = document.getElementById('topbarTitle');
+const examples = document.getElementById('examples');
+const searchArea = document.getElementById('searchArea');
 const modalOverlay = document.getElementById('modalOverlay');
 const modalName = document.getElementById('modalName');
 const modalTitleCo = document.getElementById('modalTitleCo');
 const modalBody = document.getElementById('modalBody');
 const modalClose = document.getElementById('modalClose');
-const headerMeta = document.getElementById('headerMeta');
-const chatThread = document.getElementById('chatThread');
+const appSidebar = document.getElementById('appSidebar');
+const mobileToggle = document.getElementById('mobileToggle');
+const sidebarOverlay = document.getElementById('sidebarOverlay');
 
-// ─── Auto-resize textarea ───
+// ═══════════════════════════════════════
+// PAGE NAVIGATION
+// ═══════════════════════════════════════
+function showLanding() {
+  state.page = 'landing';
+  landingPage.style.display = '';
+  appPage.classList.remove('active');
+  document.body.style.background = 'var(--bg)';
+}
+
+function showApp() {
+  state.page = 'app';
+  landingPage.style.display = 'none';
+  appPage.classList.add('active');
+  document.body.style.background = 'var(--bg)';
+  setTimeout(() => searchInput.focus(), 100);
+  updateHistoryPanel();
+  updateFavoritesPanel();
+}
+
+// Landing search → switch to app and search
+function landingDoSearch() {
+  const q = document.getElementById('landingSearchInput').value.trim();
+  if (!q) return;
+  showApp();
+  searchInput.value = q;
+  searchInput.dispatchEvent(new Event('input'));
+  setTimeout(() => doSearch(), 200);
+}
+
+document.getElementById('landingSearchInput').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') { e.preventDefault(); landingDoSearch(); }
+});
+
+// ═══════════════════════════════════════
+// SIDEBAR NAV
+// ═══════════════════════════════════════
+function navTo(page) {
+  document.querySelectorAll('.sidebar-item[data-nav]').forEach(n => {
+    n.classList.toggle('active', n.dataset.nav === page);
+  });
+  topbarTitle.textContent = page === 'search' ? 'Search' : page === 'history' ? 'Search History' : 'Favorites';
+  closeMobileSidebar();
+}
+
+mobileToggle.addEventListener('click', () => {
+  appSidebar.classList.toggle('open');
+  sidebarOverlay.classList.toggle('visible');
+});
+
+sidebarOverlay.addEventListener('click', closeMobileSidebar);
+
+function closeMobileSidebar() {
+  if (window.innerWidth <= 768) {
+    appSidebar.classList.remove('open');
+    sidebarOverlay.classList.remove('visible');
+  }
+}
+
+// ═══════════════════════════════════════
+// SCENARIOS
+// ═══════════════════════════════════════
+document.getElementById('appScenarios').addEventListener('click', (e) => {
+  const chip = e.target.closest('.scenario-chip');
+  if (!chip) return;
+  document.querySelectorAll('.scenario-chip').forEach(c => c.classList.remove('active'));
+  chip.classList.add('active');
+  state.scenario = chip.dataset.scenario;
+});
+
+function pickScenario(scenario) {
+  state.scenario = scenario;
+  document.querySelectorAll('.scenario-chip').forEach(c => {
+    c.classList.toggle('active', c.dataset.scenario === scenario);
+  });
+  closeMobileSidebar();
+  searchInput.focus();
+}
+
+// ═══════════════════════════════════════
+// SEARCH
+// ═══════════════════════════════════════
 searchInput.addEventListener('input', () => {
   searchInput.style.height = 'auto';
   searchInput.style.height = Math.min(searchInput.scrollHeight, 120) + 'px';
 });
 
-// ─── Scenario pills ───
-document.getElementById('scenarios').addEventListener('click', (e) => {
-  const pill = e.target.closest('.scenario-pill');
-  if (!pill) return;
-  document.querySelectorAll('.scenario-pill').forEach(p => p.classList.remove('active'));
-  pill.classList.add('active');
-  state.scenario = pill.dataset.scenario;
-  setTheme(state.scenario);
+searchBtn.addEventListener('click', doSearch);
+searchInput.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); doSearch(); }
 });
 
-function setTheme(scenario) {
-  const colors = SCENARIO_COLORS[scenario] || SCENARIO_COLORS.auto;
-  document.documentElement.style.setProperty('--accent', colors.accent);
-  document.documentElement.style.setProperty('--accent-light', colors.light);
-  document.documentElement.style.setProperty('--accent-glow', colors.glow);
-}
-
-// ─── Example cards ───
-document.getElementById('examples').addEventListener('click', (e) => {
-  const card = e.target.closest('.example-card');
+// Example cards
+examples.addEventListener('click', (e) => {
+  const card = e.target.closest('.app-example');
   if (!card) return;
   searchInput.value = card.dataset.query;
   searchInput.dispatchEvent(new Event('input'));
   doSearch();
-});
-
-// ─── Search ───
-searchBtn.addEventListener('click', doSearch);
-searchInput.addEventListener('keydown', (e) => {
-  if (e.key === 'Enter' && !e.shiftKey) {
-    e.preventDefault();
-    doSearch();
-  }
 });
 
 async function doSearch() {
@@ -1334,12 +1939,12 @@ async function doSearch() {
   state.loading = true;
   searchBtn.disabled = true;
   searchLoading.classList.add('active');
-  // 只有新会话时才立即折叠；追问模式（有 sessionId）保持展开
-  if (!state.sessionId) {
-    hero.classList.add('collapsed');
-  }
   resultsArea.innerHTML = '';
-  setActiveNav('search');
+
+  // Hide examples when searching
+  if (!state.sessionId) {
+    examples.style.display = 'none';
+  }
 
   try {
     const resp = await fetch('/api/chat', {
@@ -1351,10 +1956,9 @@ async function doSearch() {
     if (!resp.ok) throw new Error(`Server error: ${resp.status}`);
     const data = await resp.json();
 
-    // 保存 session ID（Agent SDK 会话）
     if (data.session_id) state.sessionId = data.session_id;
 
-    // ── 追问响应 ──
+    // Follow-up question
     if (data.type === 'question') {
       appendChatBubble('user', query);
       appendChatBubble('ai', data.question);
@@ -1364,32 +1968,28 @@ async function doSearch() {
       return;
     }
 
-    // ── 搜索结果响应 ──
+    // Search results
     state.results = data;
+    examples.style.display = 'none';
 
-    // Update scenario theme
     const detectedScenario = data.scenario || 'recruiting';
-    setTheme(detectedScenario);
-
-    // Highlight the detected pill
-    document.querySelectorAll('.scenario-pill').forEach(p => {
-      p.classList.toggle('active',
+    document.querySelectorAll('.scenario-chip').forEach(c => {
+      c.classList.toggle('active',
         state.scenario === 'auto'
-          ? p.dataset.scenario === detectedScenario || p.dataset.scenario === 'auto'
-          : p.dataset.scenario === state.scenario
+          ? c.dataset.scenario === detectedScenario || c.dataset.scenario === 'auto'
+          : c.dataset.scenario === state.scenario
       );
     });
 
     headerMeta.textContent = `${SCENARIO_LABELS[detectedScenario] || detectedScenario} · ${(data.total || 0).toLocaleString()} matches`;
 
-    // 结果出来后折叠 hero（追问完才搜到这里）
-    hero.classList.add('collapsed');
+    // Save to history
+    addToHistory(query, data.scenario || 'auto', (data.people || []).length);
 
-    // Show API-level errors (quota, auth)
     if (data.error) {
       resultsArea.innerHTML = `
         <div class="empty-state">
-          <div class="empty-icon">&#9888;</div>
+          <div class="empty-icon"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg></div>
           <div class="empty-text">API Error</div>
           <div class="empty-hint">${escHtml(data.error)}</div>
         </div>`;
@@ -1399,7 +1999,7 @@ async function doSearch() {
   } catch (err) {
     resultsArea.innerHTML = `
       <div class="empty-state">
-        <div class="empty-icon">&#9888;</div>
+        <div class="empty-icon"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg></div>
         <div class="empty-text">Search failed</div>
         <div class="empty-hint">${escHtml(err.message)}</div>
       </div>`;
@@ -1410,55 +2010,49 @@ async function doSearch() {
   }
 }
 
-// ─── Render results ───
+// ═══════════════════════════════════════
+// RENDER RESULTS
+// ═══════════════════════════════════════
 function renderResults(data) {
   const people = data.people || [];
   let html = '';
 
-  // Meta bar
-  html += `
-    <div class="results-meta">
-      <span class="results-count">${people.length} results · ${(data.total || 0).toLocaleString()} total</span>
-      <span class="results-scenario">${SCENARIO_LABELS[data.scenario] || data.scenario}</span>
-    </div>`;
+  html += `<div class="results-meta-bar">
+    <span class="results-count">${people.length} results · ${(data.total || 0).toLocaleString()} total</span>
+    <span class="results-scenario-tag">${SCENARIO_LABELS[data.scenario] || data.scenario}</span>
+  </div>`;
 
-  // SQL preview
   if (data.sql) {
     html += `<div class="results-sql" title="Click to copy" onclick="navigator.clipboard.writeText(this.textContent)">${escHtml(data.sql)}</div>`;
   }
 
-  // Summary
   if (data.summary) {
     html += `<div class="results-summary">${escHtml(data.summary)}</div>`;
   }
 
-  // Relaxation info
   if (data.relaxed && data.relax_info) {
-    html += `<div class="narrowing">
-      <div class="narrowing-title">Auto-broadened search</div>
+    html += `<div class="suggestion-box">
+      <div class="suggestion-title">Auto-broadened search</div>
       <p style="font-size:0.85rem;color:var(--text-secondary)">${escHtml(data.relax_info.explanation || '')}</p>
     </div>`;
   }
 
-  // Narrowing suggestions
   if (data.narrowing) {
     const suggestions = data.narrowing.suggestions || [];
-    html += `<div class="narrowing">
-      <div class="narrowing-title">Narrow your search</div>
-      <ul class="narrowing-list">
-        ${suggestions.map(s => `<li class="narrowing-item" onclick="appendQuery(this.textContent)">${escHtml(s)}</li>`).join('')}
+    html += `<div class="suggestion-box">
+      <div class="suggestion-title">Narrow your search</div>
+      <ul class="suggestion-list">
+        ${suggestions.map(s => `<li class="suggestion-item" onclick="appendQuery(this.textContent)">${escHtml(s)}</li>`).join('')}
       </ul>
     </div>`;
   }
 
-  // People cards
   if (people.length === 0) {
-    html += `
-      <div class="empty-state">
-        <div class="empty-icon">&#128269;</div>
-        <div class="empty-text">No results found</div>
-        <div class="empty-hint">Try broadening your search criteria</div>
-      </div>`;
+    html += `<div class="empty-state">
+      <div class="empty-icon"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div>
+      <div class="empty-text">No results found</div>
+      <div class="empty-hint">Try broadening your search criteria</div>
+    </div>`;
   } else {
     people.forEach((p, i) => {
       const initials = getInitials(p.name);
@@ -1468,31 +2062,30 @@ function renderResults(data) {
       const linkedinFull = p.linkedin_url
         ? (p.linkedin_url.startsWith('http') ? p.linkedin_url : 'https://' + p.linkedin_url)
         : '';
+      const isFav = state.favorites.some(f => f.name === p.name && f.company === p.company);
 
       html += `
-        <div class="person-card" style="animation-delay:${i * 0.06}s"
-             onclick="this.classList.toggle('expanded')">
-          <div class="card-top">
-            <div class="card-avatar" style="background:${avatarBg}">${initials}</div>
-            <div class="card-identity">
-              <div class="card-name">${escHtml(p.name || 'Unknown')}</div>
-              <div class="card-title">${escHtml(p.title || '')}${p.company ? ' @ <strong>' + escHtml(p.company) + '</strong>' : ''}</div>
+        <div class="person-row" style="animation-delay:${i * 0.05}s">
+          <div class="person-avatar" style="background:${avatarBg}">${initials}</div>
+          <div class="person-info">
+            <div class="person-name">${escHtml(p.name || 'Unknown')}</div>
+            <div class="person-title-co">${escHtml(p.title || '')}${p.company ? ' @ <strong>' + escHtml(p.company) + '</strong>' : ''}</div>
+            <div class="person-tags">
+              ${p.location && p.location !== 'None' ? `<span class="person-tag loc">${escHtml(p.location)}</span>` : ''}
+              ${p.company_industry ? `<span class="person-tag ind">${escHtml(p.company_industry)}</span>` : ''}
+              ${p.company_size ? `<span class="person-tag sz">${escHtml(p.company_size)}</span>` : ''}
             </div>
-            ${score ? `<div class="card-score"><div class="score-badge ${scoreClass}">${score}</div></div>` : ''}
+            ${p.reason ? `<div class="person-reason">${escHtml(p.reason)}</div>` : ''}
           </div>
-          <div class="card-details">
-            ${p.location && p.location !== 'None' ? `<span class="card-tag location">${escHtml(p.location)}</span>` : ''}
-            ${p.company_industry ? `<span class="card-tag industry">${escHtml(p.company_industry)}</span>` : ''}
-            ${p.company_size ? `<span class="card-tag size">${escHtml(p.company_size)}</span>` : ''}
-          </div>
-          ${p.reason ? `<div class="card-reason">${escHtml(p.reason)}</div>` : ''}
-          <div class="card-actions">
-            ${linkedinFull ? `<a href="${linkedinFull}" target="_blank" rel="noopener" class="card-action-btn" onclick="event.stopPropagation()">LinkedIn &nearr;</a>` : ''}
-            ${linkedinFull ? `<button class="card-action-btn primary" onclick="event.stopPropagation();enrichPerson('${escAttr(linkedinFull)}','${escAttr(p.name)}','${escAttr(p.company)}')">View Full Profile</button>` : ''}
-            <span class="card-action-btn" style="margin-left:auto">
-              ${p.has_email ? '&#9993; Email' : ''}${p.has_email && p.has_phone ? ' · ' : ''}${p.has_phone ? '&#9742; Phone' : ''}
-              ${!p.has_email && !p.has_phone ? 'No contact info' : ''}
-            </span>
+          <div class="person-right">
+            ${score ? `<div class="person-score ${scoreClass}">${score}</div>` : ''}
+            <div class="person-actions">
+              ${linkedinFull ? `<a href="${linkedinFull}" target="_blank" rel="noopener" class="action-btn" onclick="event.stopPropagation()">LinkedIn</a>` : ''}
+              ${linkedinFull ? `<button class="action-btn reveal" onclick="event.stopPropagation();enrichPerson('${escAttr(linkedinFull)}','${escAttr(p.name)}','${escAttr(p.company)}')">Reveal</button>` : ''}
+              <button class="action-btn" onclick="event.stopPropagation();toggleFavorite(${JSON.stringify(p).replace(/"/g, '&quot;')})" title="${isFav ? 'Remove from favorites' : 'Add to favorites'}">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="${isFav ? 'var(--cta)' : 'none'}" stroke="${isFav ? 'var(--cta)' : 'currentColor'}" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+              </button>
+            </div>
           </div>
         </div>`;
     });
@@ -1501,7 +2094,120 @@ function renderResults(data) {
   resultsArea.innerHTML = html;
 }
 
-// ─── Enrich (modal) ───
+// ═══════════════════════════════════════
+// CHAT BUBBLES
+// ═══════════════════════════════════════
+function appendChatBubble(role, text) {
+  let thread = chatThread.querySelector('.chat-thread');
+  if (!thread) {
+    thread = document.createElement('div');
+    thread.className = 'chat-thread';
+    chatThread.appendChild(thread);
+  }
+  const bubble = document.createElement('div');
+  bubble.className = `chat-bubble ${role}`;
+  bubble.textContent = text;
+  thread.appendChild(bubble);
+  examples.style.display = 'none';
+}
+
+function clearChatBubbles() {
+  chatThread.innerHTML = '';
+}
+
+// ═══════════════════════════════════════
+// HISTORY & FAVORITES
+// ═══════════════════════════════════════
+function addToHistory(query, scenario, resultCount) {
+  const entry = { query, scenario, resultCount, time: Date.now() };
+  state.searchHistory.unshift(entry);
+  if (state.searchHistory.length > 20) state.searchHistory = state.searchHistory.slice(0, 20);
+  localStorage.setItem('wh_history', JSON.stringify(state.searchHistory));
+  updateHistoryPanel();
+}
+
+function updateHistoryPanel() {
+  const panel = document.getElementById('historyPanel');
+  const badge = document.getElementById('historyCount');
+  badge.textContent = state.searchHistory.length;
+
+  if (state.searchHistory.length === 0) {
+    panel.innerHTML = '<div class="sidebar-empty">No search history yet</div>';
+    return;
+  }
+
+  panel.innerHTML = state.searchHistory.slice(0, 8).map((h, i) => `
+    <div class="sidebar-panel-item" onclick="rerunSearch('${escAttr(h.query)}')" title="${escHtml(h.query)}">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      ${escHtml(h.query.length > 28 ? h.query.slice(0, 28) + '...' : h.query)}
+    </div>
+  `).join('');
+}
+
+function rerunSearch(query) {
+  searchInput.value = query;
+  searchInput.dispatchEvent(new Event('input'));
+  navTo('search');
+  doSearch();
+}
+
+function toggleFavorite(person) {
+  const idx = state.favorites.findIndex(f => f.name === person.name && f.company === person.company);
+  if (idx >= 0) {
+    state.favorites.splice(idx, 1);
+  } else {
+    state.favorites.unshift(person);
+  }
+  localStorage.setItem('wh_favorites', JSON.stringify(state.favorites));
+  updateFavoritesPanel();
+  // Re-render results to update heart icons
+  if (state.results) renderResults(state.results);
+}
+
+function updateFavoritesPanel() {
+  const panel = document.getElementById('favoritesPanel');
+  const badge = document.getElementById('favCount');
+  badge.textContent = state.favorites.length;
+
+  if (state.favorites.length === 0) {
+    panel.innerHTML = '<div class="sidebar-empty">No favorites yet</div>';
+    return;
+  }
+
+  panel.innerHTML = state.favorites.slice(0, 8).map(f => `
+    <div class="sidebar-panel-item" title="${escHtml(f.name)} @ ${escHtml(f.company || '')}">
+      <svg viewBox="0 0 24 24" fill="var(--cta)" stroke="var(--cta)" stroke-width="2" style="width:14px;height:14px"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+      ${escHtml(f.name || 'Unknown')}
+    </div>
+  `).join('');
+}
+
+// ═══════════════════════════════════════
+// GO HOME (reset)
+// ═══════════════════════════════════════
+function goHome() {
+  if (state.sessionId) {
+    fetch(`/api/chat/${state.sessionId}`, { method: 'DELETE' }).catch(() => {});
+    state.sessionId = '';
+  }
+  resultsArea.innerHTML = '';
+  searchInput.value = '';
+  searchInput.style.height = 'auto';
+  headerMeta.textContent = 'PDL Search';
+  state.results = null;
+  clearChatBubbles();
+  examples.style.display = '';
+  state.scenario = 'auto';
+  document.querySelectorAll('.scenario-chip').forEach(c => {
+    c.classList.toggle('active', c.dataset.scenario === 'auto');
+  });
+  navTo('search');
+  searchInput.focus();
+}
+
+// ═══════════════════════════════════════
+// ENRICH (Modal)
+// ═══════════════════════════════════════
 async function enrichPerson(linkedinUrl, name, company) {
   modalOverlay.classList.add('visible');
   modalName.textContent = name || 'Loading...';
@@ -1523,7 +2229,6 @@ async function enrichPerson(linkedinUrl, name, company) {
 
     let bodyHtml = '';
 
-    // Location
     if (data.location) {
       bodyHtml += `<div class="modal-section">
         <div class="modal-section-label">Location</div>
@@ -1531,7 +2236,6 @@ async function enrichPerson(linkedinUrl, name, company) {
       </div>`;
     }
 
-    // Experience
     if (data.experience && data.experience.length) {
       bodyHtml += `<div class="modal-section">
         <div class="modal-section-label">Experience</div>
@@ -1539,13 +2243,12 @@ async function enrichPerson(linkedinUrl, name, company) {
           <div class="modal-exp-item">
             <div class="modal-exp-role">${escHtml(exp.title)}</div>
             <div class="modal-exp-co">${escHtml(exp.company)}</div>
-            <div class="modal-exp-dates">${exp.start || '?'} — ${exp.end || 'Present'}${exp.is_primary ? '  (current)' : ''}</div>
+            <div class="modal-exp-dates">${exp.start || '?'} - ${exp.end || 'Present'}${exp.is_primary ? '  (current)' : ''}</div>
           </div>
         `).join('')}
       </div>`;
     }
 
-    // Education
     if (data.education && data.education.length) {
       bodyHtml += `<div class="modal-section">
         <div class="modal-section-label">Education</div>
@@ -1558,7 +2261,6 @@ async function enrichPerson(linkedinUrl, name, company) {
       </div>`;
     }
 
-    // Skills
     if (data.skills && data.skills.length) {
       bodyHtml += `<div class="modal-section">
         <div class="modal-section-label">Skills</div>
@@ -1566,7 +2268,6 @@ async function enrichPerson(linkedinUrl, name, company) {
       </div>`;
     }
 
-    // Links
     const links = [];
     if (data.linkedin_url) links.push({ label: 'LinkedIn', url: data.linkedin_url });
     if (data.github_url) links.push({ label: 'GitHub', url: data.github_url });
@@ -1593,7 +2294,6 @@ async function enrichPerson(linkedinUrl, name, company) {
   }
 }
 
-// Close modal
 modalClose.addEventListener('click', () => modalOverlay.classList.remove('visible'));
 modalOverlay.addEventListener('click', (e) => {
   if (e.target === modalOverlay) modalOverlay.classList.remove('visible');
@@ -1602,27 +2302,9 @@ document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') modalOverlay.classList.remove('visible');
 });
 
-// ─── Helpers ───
-// ─── Chat bubbles ───
-function appendChatBubble(role, text) {
-  // 如果还没有 chat-thread wrapper，创建一个
-  if (!chatThread.querySelector('.chat-thread')) {
-    chatThread.innerHTML = '<div class="chat-thread"></div>';
-  }
-  const thread = chatThread.querySelector('.chat-thread');
-  const bubble = document.createElement('div');
-  bubble.className = `chat-bubble ${role}`;
-  bubble.textContent = text;
-  thread.appendChild(bubble);
-  // 显示 examples 上方
-  document.getElementById('examples').style.display = 'none';
-}
-
-function clearChatBubbles() {
-  chatThread.innerHTML = '';
-  document.getElementById('examples').style.display = '';
-}
-
+// ═══════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════
 function appendQuery(text) {
   searchInput.value += ' ' + text;
   searchInput.focus();
@@ -1662,170 +2344,146 @@ function escAttr(str) {
   return escHtml(str).replace(/'/g, "\\'");
 }
 
-// ─── Sidebar ───
-const sidebar = document.getElementById('sidebar');
-const sidebarToggle = document.getElementById('sidebarToggle');
-const sidebarOverlay = document.getElementById('sidebarOverlay');
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 
-sidebarToggle.addEventListener('click', () => {
-  sidebar.classList.toggle('open');
-  sidebarOverlay.classList.toggle('visible');
-});
-
-sidebarOverlay.addEventListener('click', () => {
-  sidebar.classList.remove('open');
-  sidebarOverlay.classList.remove('visible');
-});
-
-function closeSidebarMobile() {
-  if (window.innerWidth <= 768) {
-    sidebar.classList.remove('open');
-    sidebarOverlay.classList.remove('visible');
-  }
-}
-
-function setActiveNav(page) {
-  document.querySelectorAll('.nav-item[data-page]').forEach(n => {
-    n.classList.toggle('active', n.dataset.page === page);
-  });
-}
-
-function goHome(e) {
-  if (e) e.preventDefault();
-  // Close the Agent SDK session on server
-  if (state.sessionId) {
-    fetch(`/api/chat/${state.sessionId}`, { method: 'DELETE' }).catch(() => {});
-    state.sessionId = '';
-  }
-  hero.classList.remove('collapsed');
-  resultsArea.innerHTML = '';
-  searchInput.value = '';
-  searchInput.style.height = 'auto';
-  headerMeta.textContent = 'PDL Search';
-  state.results = null;
-  clearChatBubbles();
-  setTheme('auto');
-  setActiveNav('home');
-  document.querySelectorAll('.scenario-pill').forEach(p => {
-    p.classList.toggle('active', p.dataset.scenario === 'auto');
-  });
-  state.scenario = 'auto';
-  closeSidebarMobile();
-  searchInput.focus();
-}
-
-function focusSearch() {
-  setActiveNav('search');
-  closeSidebarMobile();
-  searchInput.focus();
-}
-
-function pickScenario(scenario) {
-  state.scenario = scenario;
-  setTheme(scenario);
-  document.querySelectorAll('.scenario-pill').forEach(p => {
-    p.classList.toggle('active', p.dataset.scenario === scenario);
-  });
-  closeSidebarMobile();
-  searchInput.focus();
-}
-
-// ─── Demo Mode ───
+// ═══════════════════════════════════════
+// DEMO MODE
+// ═══════════════════════════════════════
 const DEMO_SCENARIOS = [
   {
     query: "帮我找硅谷会 Python 和机器学习的高级工程师",
     scenario: "recruiting",
     sql: "SELECT * FROM person WHERE skills LIKE '%python%' AND skills LIKE '%machine learning%' AND job_title LIKE '%senior%' AND location_metro = 'San Francisco, CA'",
-    description: "寻找硅谷高级 ML / Python 工程师候选人",
     total: 1225112,
     people: [
       { name: "Tao Feng", title: "Staff Software Engineer", company: "Google", location: "San Francisco, CA", company_industry: "Internet", company_size: "10001+", linkedin_url: "https://linkedin.com/in/taofeng", score: 9, reason: "Google Staff 级工程师，Python 和 ML 经验丰富，地点完全匹配", has_email: true, has_phone: false },
       { name: "Josh Finnie", title: "Senior Software Engineer", company: "People Data Labs", location: "San Francisco, CA", company_industry: "Computer Software", company_size: "201-500", linkedin_url: "https://linkedin.com/in/joshfinnie", score: 8, reason: "高级工程师，数据工程背景，Python 技术栈", has_email: true, has_phone: true },
       { name: "Jessica Kosturko", title: "Senior Engineering Manager, Google Cloud", company: "Google", location: "San Francisco, CA", company_industry: "Internet", company_size: "10001+", linkedin_url: "https://linkedin.com/in/jkosturko", score: 7, reason: "Google Cloud 工程经理，ML 基础设施背景", has_email: false, has_phone: false },
-      { name: "Robert Elwell", title: "VP of Software Engineering", company: "MacStadium", location: "San Jose, CA", company_industry: "Computer Software", company_size: "51-200", linkedin_url: "https://linkedin.com/in/relwell", score: 6, reason: "VP 级别工程师，管理经验丰富，湾区位置", has_email: true, has_phone: false },
       { name: "Priya Nair", title: "Principal ML Engineer", company: "Stripe", location: "San Francisco, CA", company_industry: "Financial Services", company_size: "5001-10000", linkedin_url: "https://linkedin.com/in/priyanair", score: 9, reason: "Stripe 首席 ML 工程师，金融科技 + ML 双背景", has_email: true, has_phone: true },
       { name: "Kevin Zhang", title: "Senior Data Scientist", company: "Airbnb", location: "San Francisco, CA", company_industry: "Internet", company_size: "5001-10000", linkedin_url: "https://linkedin.com/in/kevinzhang", score: 7, reason: "Airbnb 高级数据科学家，Python 和统计建模", has_email: true, has_phone: false },
     ],
-    summary: "共找到 122 万+ 工程师，筛选出 6 位最匹配的硅谷高级 ML/Python 工程师候选人，均来自知名科技公司。",
+    summary: "共找到 122 万+ 工程师，筛选出 5 位最匹配的硅谷高级 ML/Python 工程师候选人，均来自知名科技公司。",
     narrowing: { suggestions: ["要限制具体技术栈吗？如 PyTorch / TensorFlow / JAX？", "要指定公司规模吗？比如 1000 人以上的大厂？", "要限制工作年限吗？比如 5 年以上经验？"] }
   },
   {
     query: "找 SaaS 行业的市场总监，200人以上的公司",
     scenario: "marketing",
     sql: "SELECT * FROM person WHERE job_title LIKE '%marketing director%' AND job_company_industry = 'computer software' AND job_company_employee_count >= 200",
-    description: "寻找 SaaS 公司市场总监，200 人以上规模",
     total: 48320,
     people: [
-      { name: "Sarah Chen", title: "Director of Marketing", company: "Salesforce", location: "San Francisco, CA", company_industry: "Computer Software", company_size: "10001+", linkedin_url: "https://linkedin.com/in/sarahchen", score: 9, reason: "Salesforce 市场总监，顶级 SaaS 公司，品牌影响力强", has_email: true, has_phone: false },
-      { name: "Marcus Webb", title: "VP of Marketing", company: "HubSpot", location: "Boston, MA", company_industry: "Computer Software", company_size: "5001-10000", linkedin_url: "https://linkedin.com/in/marcuswebb", score: 9, reason: "HubSpot 营销副总裁，入站营销方法论领导者", has_email: true, has_phone: true },
-      { name: "Lily Okonkwo", title: "Head of Product Marketing", company: "Notion", location: "New York, NY", company_industry: "Computer Software", company_size: "201-500", linkedin_url: "https://linkedin.com/in/lilyokonkwo", score: 8, reason: "Notion 产品营销负责人，增长型 SaaS 丰富经验", has_email: false, has_phone: false },
-      { name: "Daniel Park", title: "Marketing Director", company: "Figma", location: "San Francisco, CA", company_industry: "Computer Software", company_size: "1001-5000", linkedin_url: "https://linkedin.com/in/danielpark", score: 8, reason: "Figma 市场总监，设计工具 PLG 营销专家", has_email: true, has_phone: false },
-      { name: "Anna Rostova", title: "Director of Demand Generation", company: "Snowflake", location: "San Mateo, CA", company_industry: "Computer Software", company_size: "5001-10000", linkedin_url: "https://linkedin.com/in/annarostova", score: 7, reason: "Snowflake 需求生成总监，B2B 企业营销专家", has_email: true, has_phone: true },
+      { name: "Sarah Chen", title: "Director of Marketing", company: "Salesforce", location: "San Francisco, CA", company_industry: "Computer Software", company_size: "10001+", linkedin_url: "https://linkedin.com/in/sarahchen", score: 9, reason: "Salesforce 市场总监，顶级 SaaS 公司", has_email: true, has_phone: false },
+      { name: "Marcus Webb", title: "VP of Marketing", company: "HubSpot", location: "Boston, MA", company_industry: "Computer Software", company_size: "5001-10000", linkedin_url: "https://linkedin.com/in/marcuswebb", score: 9, reason: "HubSpot 营销副总裁，入站营销领导者", has_email: true, has_phone: true },
+      { name: "Lily Okonkwo", title: "Head of Product Marketing", company: "Notion", location: "New York, NY", company_industry: "Computer Software", company_size: "201-500", linkedin_url: "https://linkedin.com/in/lilyokonkwo", score: 8, reason: "Notion 产品营销负责人，增长型 SaaS 经验", has_email: false, has_phone: false },
+      { name: "Daniel Park", title: "Marketing Director", company: "Figma", location: "San Francisco, CA", company_industry: "Computer Software", company_size: "1001-5000", linkedin_url: "https://linkedin.com/in/danielpark", score: 8, reason: "Figma 市场总监，PLG 营销专家", has_email: true, has_phone: false },
     ],
-    summary: "共找到 4.8 万名候选人，筛选出 5 位 SaaS 市场总监，均来自知名软件公司，营销经验丰富。",
+    summary: "共找到 4.8 万名候选人，筛选出 4 位 SaaS 市场总监，均来自知名软件公司。",
   },
   {
     query: "找科技领域的内容创作者和博主，在美国",
     scenario: "kol",
-    sql: "SELECT * FROM person WHERE (job_title LIKE '%content creator%' OR job_title LIKE '%blogger%' OR job_title LIKE '%influencer%') AND location_country = 'united states' AND job_company_industry = 'internet'",
-    description: "寻找美国科技领域 KOL / 内容创作者",
+    sql: "SELECT * FROM person WHERE (job_title LIKE '%content creator%' OR job_title LIKE '%blogger%') AND location_country = 'united states'",
     total: 8740,
     people: [
-      { name: "Alex Rivera", title: "Tech Content Creator & YouTuber", company: "Independent", location: "Los Angeles, CA", company_industry: "Internet", company_size: "1-10", linkedin_url: "https://linkedin.com/in/alexrivera", score: 9, reason: "科技 YouTube 频道 50 万订阅，擅长 AI 和软件评测", has_email: true, has_phone: false },
-      { name: "Maya Johnson", title: "Developer Advocate & Blogger", company: "Vercel", location: "New York, NY", company_industry: "Internet", company_size: "201-500", linkedin_url: "https://linkedin.com/in/mayajohnson", score: 8, reason: "Vercel 开发者布道师，技术博客影响力大", has_email: true, has_phone: false },
-      { name: "Chris Wu", title: "AI/ML Content Creator", company: "Independent", location: "San Francisco, CA", company_industry: "Internet", company_size: "1-10", linkedin_url: "https://linkedin.com/in/chriswu", score: 8, reason: "AI 领域专业内容创作者，Newsletter 订阅 3 万+", has_email: false, has_phone: false },
-      { name: "Destiny Brooks", title: "Tech Influencer & Podcaster", company: "Independent", location: "Austin, TX", company_industry: "Internet", company_size: "1-10", linkedin_url: "https://linkedin.com/in/destinybrooks", score: 7, reason: "科技播客主播，专注创业和产品话题", has_email: true, has_phone: true },
+      { name: "Alex Rivera", title: "Tech Content Creator & YouTuber", company: "Independent", location: "Los Angeles, CA", company_industry: "Internet", company_size: "1-10", linkedin_url: "https://linkedin.com/in/alexrivera", score: 9, reason: "科技 YouTube 50 万订阅，AI 评测", has_email: true, has_phone: false },
+      { name: "Maya Johnson", title: "Developer Advocate & Blogger", company: "Vercel", location: "New York, NY", company_industry: "Internet", company_size: "201-500", linkedin_url: "https://linkedin.com/in/mayajohnson", score: 8, reason: "Vercel 开发者布道师，博客影响力大", has_email: true, has_phone: false },
+      { name: "Chris Wu", title: "AI/ML Content Creator", company: "Independent", location: "San Francisco, CA", company_industry: "Internet", company_size: "1-10", linkedin_url: "https://linkedin.com/in/chriswu", score: 8, reason: "AI 内容创作者，Newsletter 3 万+", has_email: false, has_phone: false },
     ],
-    summary: "共找到 8700 位科技 KOL，筛选出 4 位活跃的美国科技内容创作者，覆盖 YouTube / 博客 / 播客多平台。",
+    summary: "共找到 8700 位科技 KOL，筛选出 3 位活跃美国科技内容创作者。",
   },
   {
     query: "找医疗行业 500 人以上公司的 VP 或采购负责人",
     scenario: "sales",
-    sql: "SELECT * FROM person WHERE (job_title LIKE '%vp%' OR job_title LIKE '%vice president%' OR job_title LIKE '%procurement%') AND job_company_industry = 'hospital & health care' AND job_company_employee_count >= 500",
-    description: "寻找大型医疗机构采购决策人",
+    sql: "SELECT * FROM person WHERE (job_title LIKE '%vp%' OR job_title LIKE '%procurement%') AND job_company_industry = 'hospital & health care' AND job_company_employee_count >= 500",
     total: 23150,
     people: [
-      { name: "Dr. Patricia Moore", title: "VP of Operations", company: "Kaiser Permanente", location: "Oakland, CA", company_industry: "Hospital & Health Care", company_size: "10001+", linkedin_url: "https://linkedin.com/in/patriciamoore", score: 9, reason: "Kaiser 运营副总裁，掌握大规模采购决策权", has_email: false, has_phone: false },
-      { name: "James Thornton", title: "Chief Procurement Officer", company: "Mayo Clinic", location: "Rochester, MN", company_industry: "Hospital & Health Care", company_size: "10001+", linkedin_url: "https://linkedin.com/in/jamesthornton", score: 10, reason: "Mayo Clinic 首席采购官，直接负责采购决策", has_email: true, has_phone: false },
-      { name: "Linda Xu", title: "VP Supply Chain & Procurement", company: "Ascension Health", location: "St. Louis, MO", company_industry: "Hospital & Health Care", company_size: "10001+", linkedin_url: "https://linkedin.com/in/lindaxu", score: 9, reason: "供应链和采购双重职责，大型医疗集团", has_email: true, has_phone: true },
-      { name: "Robert Nguyen", title: "VP of Clinical Operations", company: "CommonSpirit Health", location: "Chicago, IL", company_industry: "Hospital & Health Care", company_size: "10001+", linkedin_url: "https://linkedin.com/in/robertnguyen", score: 8, reason: "临床运营副总裁，技术和设备采购影响者", has_email: false, has_phone: false },
-      { name: "Susan Blackwell", title: "Director of Purchasing", company: "HCA Healthcare", location: "Nashville, TN", company_industry: "Hospital & Health Care", company_size: "10001+", linkedin_url: "https://linkedin.com/in/susanblackwell", score: 7, reason: "HCA 采购总监，全国最大医院集团之一", has_email: true, has_phone: false },
+      { name: "Dr. Patricia Moore", title: "VP of Operations", company: "Kaiser Permanente", location: "Oakland, CA", company_industry: "Hospital & Health Care", company_size: "10001+", linkedin_url: "https://linkedin.com/in/patriciamoore", score: 9, reason: "Kaiser 运营副总裁，大规模采购决策权", has_email: false, has_phone: false },
+      { name: "James Thornton", title: "Chief Procurement Officer", company: "Mayo Clinic", location: "Rochester, MN", company_industry: "Hospital & Health Care", company_size: "10001+", linkedin_url: "https://linkedin.com/in/jamesthornton", score: 10, reason: "Mayo Clinic 首席采购官", has_email: true, has_phone: false },
+      { name: "Linda Xu", title: "VP Supply Chain & Procurement", company: "Ascension Health", location: "St. Louis, MO", company_industry: "Hospital & Health Care", company_size: "10001+", linkedin_url: "https://linkedin.com/in/lindaxu", score: 9, reason: "供应链和采购双重职责", has_email: true, has_phone: true },
+      { name: "Susan Blackwell", title: "Director of Purchasing", company: "HCA Healthcare", location: "Nashville, TN", company_industry: "Hospital & Health Care", company_size: "10001+", linkedin_url: "https://linkedin.com/in/susanblackwell", score: 7, reason: "HCA 采购总监，全国最大医院集团", has_email: true, has_phone: false },
     ],
-    summary: "共找到 2.3 万名候选人，筛选出 5 位大型医疗机构的采购决策者，均为 VP 级别或首席采购官。",
+    summary: "共找到 2.3 万名候选人，筛选出 4 位大型医疗机构采购决策者。",
   }
 ];
 
-let demoIndex = 0;
+const DEMO_CONVERSATIONS = [
+  { ...DEMO_SCENARIOS[0], firstMsg: "帮我找工程师", aiQuestion: "好的！请问是用于招聘候选人，还是其他目的？另外，有偏好的技术方向和地区吗？", userReply: "招聘，Python 机器学习方向，硅谷优先" },
+  { ...DEMO_SCENARIOS[1], firstMsg: "找一些市场方面的人", aiQuestion: "明白！请问是想找营销目标受众，还是招聘市场人才？目标行业有要求吗？", userReply: "营销，SaaS 软件行业，200 人以上的公司" },
+  { ...DEMO_SCENARIOS[2], firstMsg: "找一些博主", aiQuestion: "了解！请问是科技类博主，还是其他领域？主要在哪个地区？", userReply: "科技内容创作者，美国，有一定影响力的" },
+  { ...DEMO_SCENARIOS[3], firstMsg: "找一些可以聊合作的人", aiQuestion: "明白！请问是销售拓客，还是其他合作目的？目标行业和职位层级有要求吗？", userReply: "销售，医疗行业，VP 级别以上，500 人大公司" },
+];
 
-function runDemo() {
-  const demo = DEMO_SCENARIOS[demoIndex % DEMO_SCENARIOS.length];
+let demoIndex = 0;
+let demoPlaying = false;
+
+async function runDemo() {
+  if (demoPlaying) return;
+  demoPlaying = true;
+
+  // Ensure we're in app view
+  if (state.page !== 'app') showApp();
+  goHome();
+  await sleep(300);
+
+  const conv = DEMO_CONVERSATIONS[demoIndex % DEMO_CONVERSATIONS.length];
   demoIndex++;
 
-  // Fill search box
-  searchInput.value = demo.query;
+  // Step 1: Type first message
+  await typeInto(searchInput, conv.firstMsg);
+  await sleep(600);
+
+  // Step 2: Simulate loading
+  searchLoading.classList.add('active');
+  searchBtn.disabled = true;
+  await sleep(900);
+  searchLoading.classList.remove('active');
+  searchBtn.disabled = false;
+
+  // Step 3: AI asks follow-up
+  appendChatBubble('user', conv.firstMsg);
+  appendChatBubble('ai', conv.aiQuestion);
+  searchInput.value = '';
   searchInput.style.height = 'auto';
-  searchInput.style.height = Math.min(searchInput.scrollHeight, 120) + 'px';
+  await sleep(1200);
 
-  // Collapse hero
-  hero.classList.add('collapsed');
+  // Step 4: User replies
+  await typeInto(searchInput, conv.userReply);
+  await sleep(700);
+
+  // Step 5: Loading + search
+  searchLoading.classList.add('active');
+  searchBtn.disabled = true;
+  examples.style.display = 'none';
   resultsArea.innerHTML = '';
-  setActiveNav('search');
+  await sleep(1400);
+  searchLoading.classList.remove('active');
+  searchBtn.disabled = false;
 
-  // Set theme
-  setTheme(demo.scenario);
-  document.querySelectorAll('.scenario-pill').forEach(p => {
-    p.classList.toggle('active', p.dataset.scenario === demo.scenario);
+  // Step 6: Show results
+  document.querySelectorAll('.scenario-chip').forEach(c => {
+    c.classList.toggle('active', c.dataset.scenario === conv.scenario);
   });
+  headerMeta.textContent = `${SCENARIO_LABELS[conv.scenario]} · ${(conv.total || 0).toLocaleString()} matches · DEMO`;
+  state.results = conv;
+  renderResults(conv);
+  addToHistory(conv.query, conv.scenario, (conv.people || []).length);
 
-  // Update header
-  headerMeta.textContent = `${SCENARIO_LABELS[demo.scenario]} · ${(demo.total || 0).toLocaleString()} matches · DEMO`;
-
-  // Render
-  renderResults(demo);
+  demoPlaying = false;
 }
 
-// Focus search on load
-searchInput.focus();
+async function typeInto(el, text) {
+  el.value = '';
+  for (const char of text) {
+    el.value += char;
+    el.style.height = 'auto';
+    el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+    await sleep(25 + Math.random() * 25);
+  }
+}
+
+// ═══════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════
+showLanding();
 </script>
 </body>
 </html>
