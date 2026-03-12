@@ -18,6 +18,10 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy source
 COPY . .
 
+# Create non-root user (Claude Agent SDK refuses --dangerously-skip-permissions as root)
+RUN useradd -m -s /bin/bash appuser && chown -R appuser:appuser /app
+USER appuser
+
 # Railway injects PORT env var at runtime
 ENV PORT=8080
 EXPOSE 8080
