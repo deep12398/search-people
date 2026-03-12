@@ -1390,9 +1390,9 @@ button { font-family: var(--font-body); }
         <button class="nav-link">Resources</button>
       </div>
 
-      <div class="nav-actions">
-        <button class="btn btn-ghost" onclick="showApp()">Sign In</button>
-        <button class="btn btn-primary" onclick="showApp()">Try for Free</button>
+      <div class="nav-actions" id="navActions">
+        <button class="btn btn-ghost" onclick="handleSignIn()">Sign In</button>
+        <button class="btn btn-primary" onclick="handleSignIn()">Try for Free</button>
       </div>
     </div>
   </nav>
@@ -1556,15 +1556,26 @@ button { font-family: var(--font-body); }
       </div>
     </nav>
 
-    <div class="sidebar-account">
-      <div class="account-avatar">W</div>
-      <div class="account-info">
-        <div class="account-name">WaveHeart</div>
-        <div class="account-email">WaveHeart@gmail.com</div>
+    <div class="sidebar-account" id="sidebarAccount">
+      <!-- Not logged in state -->
+      <div id="accountGuest" style="display:flex;align-items:center;gap:10px;width:100%">
+        <div class="account-avatar" style="background:var(--bg-elevated);color:var(--text-tertiary)">?</div>
+        <div class="account-info">
+          <div class="account-name" style="color:var(--text-secondary)">Guest</div>
+          <div class="account-email"><a href="/login" style="color:var(--purple-light);font-size:0.75rem">Sign in to save data</a></div>
+        </div>
       </div>
-      <button class="account-settings-btn" title="Settings">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-      </button>
+      <!-- Logged in state (hidden by default) -->
+      <div id="accountUser" style="display:none;align-items:center;gap:10px;width:100%">
+        <div class="account-avatar" id="userAvatar">W</div>
+        <div class="account-info">
+          <div class="account-name" id="userName">User</div>
+          <div class="account-email" id="userEmail">user@example.com</div>
+        </div>
+        <button class="account-settings-btn" title="Sign out" onclick="logout()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        </button>
+      </div>
     </div>
   </aside>
 
@@ -1682,18 +1693,25 @@ async function checkAuth() {
 }
 
 function updateAccountUI() {
-  const nameEl = document.querySelector('.account-name');
-  const emailEl = document.querySelector('.account-email');
-  const avatarEl = document.querySelector('.account-avatar');
-  const settingsBtn = document.querySelector('.account-settings-btn');
+  const guestEl = document.getElementById('accountGuest');
+  const userEl = document.getElementById('accountUser');
+  const navActions = document.getElementById('navActions');
   if (authUser) {
-    nameEl.textContent = authUser.name;
-    emailEl.textContent = authUser.email;
-    avatarEl.textContent = authUser.name[0].toUpperCase();
-    // Replace settings icon with logout
-    settingsBtn.title = 'Sign out';
-    settingsBtn.onclick = logout;
-    settingsBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>';
+    guestEl.style.display = 'none';
+    userEl.style.display = 'flex';
+    document.getElementById('userName').textContent = authUser.name;
+    document.getElementById('userEmail').textContent = authUser.email;
+    document.getElementById('userAvatar').textContent = authUser.name[0].toUpperCase();
+    // Landing nav: show user name instead of Sign In
+    if (navActions) {
+      navActions.innerHTML = `
+        <span style="color:var(--text-secondary);font-size:0.85rem">${escHtml(authUser.name)}</span>
+        <button class="btn btn-primary" onclick="showApp()">Open App</button>
+      `;
+    }
+  } else {
+    guestEl.style.display = 'flex';
+    userEl.style.display = 'none';
   }
 }
 
@@ -1768,6 +1786,11 @@ const sidebarOverlay = document.getElementById('sidebarOverlay');
 // ═══════════════════════════════════════
 // PAGE NAVIGATION
 // ═══════════════════════════════════════
+function handleSignIn() {
+  if (authUser) { showApp(); return; }
+  window.location.href = '/login';
+}
+
 function showLanding() {
   state.page = 'landing';
   landingPage.style.display = '';
@@ -2197,7 +2220,44 @@ async function typeInto(el, text) {
 // INIT
 // ═══════════════════════════════════════
 showLanding();
-checkAuth(); // Load user session + sync history/favorites from API
+
+// Handle OAuth callback (Google login redirects back with hash tokens)
+(async () => {
+  await checkAuth();
+  // If URL has access_token in hash (OAuth callback), process it
+  if (window.location.hash && window.location.hash.includes('access_token') && sb) {
+    const { data: { session } } = await sb.auth.getSession();
+    if (session) {
+      localStorage.setItem('sb_access_token', session.access_token);
+      const u = session.user;
+      authUser = {
+        id: u.id, email: u.email,
+        name: u.user_metadata?.full_name || u.email?.split('@')[0] || 'User',
+        avatar: u.user_metadata?.avatar_url || '',
+      };
+      updateAccountUI();
+      await loadHistoryFromAPI();
+      await loadFavoritesFromAPI();
+      // Clean up URL hash and go to app
+      history.replaceState(null, '', '/');
+      showApp();
+    }
+  }
+  // Auth state change listener (token refresh etc.)
+  if (sb) {
+    sb.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_IN' && session) {
+        localStorage.setItem('sb_access_token', session.access_token);
+      } else if (event === 'TOKEN_REFRESHED' && session) {
+        localStorage.setItem('sb_access_token', session.access_token);
+      } else if (event === 'SIGNED_OUT') {
+        localStorage.removeItem('sb_access_token');
+        authUser = null;
+        updateAccountUI();
+      }
+    });
+  }
+})();
 </script>
 </body>
 </html>
