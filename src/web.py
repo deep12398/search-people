@@ -5,7 +5,7 @@ import re
 import uuid
 import time
 from pathlib import Path
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request, Depends
 from fastapi.responses import HTMLResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -13,6 +13,8 @@ from pydantic import BaseModel
 from claude_agent_sdk import ClaudeSDKClient, ClaudeAgentOptions, AssistantMessage, TextBlock
 from src.tools import create_tools_server
 from src.pdl_client import enrich_person
+from src.auth import get_current_user, require_auth
+from src.config import SUPABASE_URL, SUPABASE_ANON_KEY
 
 app = FastAPI(title="People Search")
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
@@ -140,6 +142,11 @@ class EnrichRequest(BaseModel):
     company: str = ""
 
 
+class FavoriteRequest(BaseModel):
+    person: dict
+    linkedin_url: str = ""
+
+
 # ─── Routes ───────────────────────────────────────────────────────────────────
 
 @app.get("/", response_class=HTMLResponse)
@@ -147,8 +154,17 @@ async def index():
     return (STATIC_DIR / "index.html").read_text(encoding="utf-8")
 
 
+@app.get("/api/config")
+async def api_config():
+    """Public config for frontend Supabase initialization."""
+    return {
+        "supabase_url": SUPABASE_URL,
+        "supabase_anon_key": SUPABASE_ANON_KEY,
+    }
+
+
 @app.post("/api/chat")
-async def api_chat(req: ChatRequest):
+async def api_chat(req: ChatRequest, request: Request):
     """Stateful chat endpoint using Agent SDK. Handles clarification + search."""
     try:
         sid, client = await _get_or_create_session(req.session_id or None)
@@ -169,6 +185,31 @@ async def api_chat(req: ChatRequest):
     # Parse: question or results
     parsed = _parse_agent_response(response_text)
     parsed["session_id"] = sid
+
+    # Auto-save search history if user is authenticated and we got results
+    if SUPABASE_URL and parsed.get("type") == "results":
+        auth_user = await get_current_user(request)
+        if auth_user:
+            try:
+                from src.supabase_client import save_search_history, save_search_results
+                history_row = await save_search_history(
+                    user_id=auth_user.id,
+                    query=req.message,
+                    scenario=parsed.get("scenario", "auto"),
+                    result_count=parsed.get("total", 0),
+                    access_token=auth_user.token,
+                )
+                if history_row.get("id"):
+                    await save_search_results(
+                        search_id=history_row["id"],
+                        people=parsed.get("people", []),
+                        sql_used=parsed.get("sql", ""),
+                        summary=parsed.get("summary", ""),
+                        access_token=auth_user.token,
+                    )
+            except Exception:
+                pass  # Don't fail the search if DB save fails
+
     return parsed
 
 
@@ -201,6 +242,74 @@ async def api_enrich(req: EnrichRequest):
     if "error" in result:
         raise HTTPException(400, result["error"])
     return result
+
+
+@app.get("/login", response_class=HTMLResponse)
+async def login_page():
+    login_file = STATIC_DIR / "login.html"
+    if not login_file.exists():
+        raise HTTPException(404, "Login page not found")
+    return login_file.read_text(encoding="utf-8")
+
+
+# ─── Supabase-backed endpoints (require auth) ────────────────────────────────
+
+@app.get("/api/history")
+async def api_get_history(request: Request):
+    user = await require_auth(request)
+    from src.supabase_client import get_search_history
+    return await get_search_history(user.id, access_token=user.token)
+
+
+@app.get("/api/history/{history_id}/results")
+async def api_get_history_results(history_id: str, request: Request):
+    user = await require_auth(request)
+    from src.supabase_client import get_search_results
+    result = await get_search_results(history_id, access_token=user.token)
+    if not result:
+        raise HTTPException(404, "Results not found")
+    return result
+
+
+@app.delete("/api/history/{history_id}")
+async def api_delete_history(history_id: str, request: Request):
+    user = await require_auth(request)
+    from src.supabase_client import delete_search_history
+    await delete_search_history(user.id, history_id, access_token=user.token)
+    return {"ok": True}
+
+
+@app.get("/api/favorites")
+async def api_get_favorites(request: Request):
+    user = await require_auth(request)
+    from src.supabase_client import get_favorites
+    return await get_favorites(user.id, access_token=user.token)
+
+
+@app.post("/api/favorites")
+async def api_add_favorite(req: FavoriteRequest, request: Request):
+    user = await require_auth(request)
+    from src.supabase_client import add_favorite
+    return await add_favorite(user.id, req.person, access_token=user.token)
+
+
+@app.delete("/api/favorites")
+async def api_remove_favorite(request: Request, linkedin_url: str = ""):
+    user = await require_auth(request)
+    if not linkedin_url:
+        raise HTTPException(400, "linkedin_url query param required")
+    from src.supabase_client import remove_favorite
+    await remove_favorite(user.id, linkedin_url, access_token=user.token)
+    return {"ok": True}
+
+
+@app.get("/api/me")
+async def api_me(request: Request):
+    """Get current user info (used by frontend to check auth status)."""
+    user = await get_current_user(request)
+    if not user:
+        return {"authenticated": False}
+    return {"authenticated": True, "user_id": user.id}
 
 
 def main():

@@ -11,6 +11,11 @@ APOLLO_BASE_URL = "https://api.apollo.io/api/v1"
 PDL_API_KEY = os.environ.get("PDL_API_KEY", "")
 PDL_BASE_URL = "https://api.peopledatalabs.com/v5"
 
+# Supabase
+SUPABASE_URL = os.environ.get("SUPABASE_URL", "")
+SUPABASE_ANON_KEY = os.environ.get("SUPABASE_ANON_KEY", "")
+SUPABASE_SERVICE_KEY = os.environ.get("SUPABASE_SERVICE_KEY", "")
+
 # LLM model for query parsing (cheaper model for structured extraction)
 PARSE_MODEL = "claude-sonnet-4-20250514"
 

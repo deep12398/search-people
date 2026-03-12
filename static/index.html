@@ -1636,7 +1636,98 @@ button { font-family: var(--font-body); }
   </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
+// ═══════════════════════════════════════
+// AUTH & SUPABASE CONFIG
+// ═══════════════════════════════════════
+let sb = null;
+
+async function initSupabase() {
+  try {
+    const resp = await fetch('/api/config');
+    const cfg = await resp.json();
+    if (cfg.supabase_url && cfg.supabase_anon_key && window.supabase) {
+      sb = window.supabase.createClient(cfg.supabase_url, cfg.supabase_anon_key);
+    }
+  } catch (e) { console.warn('Supabase config not available:', e); }
+}
+
+let authUser = null; // { id, email, name, avatar }
+
+function getAuthHeaders() {
+  const token = localStorage.getItem('sb_access_token');
+  return token ? { 'Authorization': 'Bearer ' + token } : {};
+}
+
+async function checkAuth() {
+  await initSupabase();
+  if (!sb) return;
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    if (session) {
+      localStorage.setItem('sb_access_token', session.access_token);
+      const u = session.user;
+      authUser = {
+        id: u.id,
+        email: u.email,
+        name: u.user_metadata?.full_name || u.email?.split('@')[0] || 'User',
+        avatar: u.user_metadata?.avatar_url || '',
+      };
+      updateAccountUI();
+      await loadHistoryFromAPI();
+      await loadFavoritesFromAPI();
+    }
+  } catch (e) { console.warn('Auth check failed:', e); }
+}
+
+function updateAccountUI() {
+  const nameEl = document.querySelector('.account-name');
+  const emailEl = document.querySelector('.account-email');
+  const avatarEl = document.querySelector('.account-avatar');
+  const settingsBtn = document.querySelector('.account-settings-btn');
+  if (authUser) {
+    nameEl.textContent = authUser.name;
+    emailEl.textContent = authUser.email;
+    avatarEl.textContent = authUser.name[0].toUpperCase();
+    // Replace settings icon with logout
+    settingsBtn.title = 'Sign out';
+    settingsBtn.onclick = logout;
+    settingsBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>';
+  }
+}
+
+async function logout() {
+  if (sb) await sb.auth.signOut();
+  localStorage.removeItem('sb_access_token');
+  authUser = null;
+  window.location.href = '/login';
+}
+
+async function loadHistoryFromAPI() {
+  try {
+    const resp = await fetch('/api/history', { headers: getAuthHeaders() });
+    if (resp.ok) {
+      const data = await resp.json();
+      state.searchHistory = data.map(h => ({
+        id: h.id, query: h.query, scenario: h.scenario, cnt: h.result_count, time: new Date(h.created_at).getTime(),
+      }));
+      updateHistoryPanel();
+    }
+  } catch (e) { console.warn('Failed to load history:', e); }
+}
+
+async function loadFavoritesFromAPI() {
+  try {
+    const resp = await fetch('/api/favorites', { headers: getAuthHeaders() });
+    if (resp.ok) {
+      const data = await resp.json();
+      state.favorites = data.map(f => ({ ...f.person, _fav_id: f.id }));
+      updateFavoritesPanel();
+    }
+  } catch (e) { console.warn('Failed to load favorites:', e); }
+}
+
 // ═══════════════════════════════════════
 // STATE
 // ═══════════════════════════════════════
@@ -1768,7 +1859,7 @@ async function doSearch() {
   try {
     const resp = await fetch('/api/chat', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
       body: JSON.stringify({ message: query, session_id: state.sessionId }),
     });
     if (!resp.ok) throw new Error(`Server error: ${resp.status}`);
@@ -1892,6 +1983,7 @@ function addToHistory(query, scenario, cnt) {
   if (state.searchHistory.length > 20) state.searchHistory = state.searchHistory.slice(0, 20);
   localStorage.setItem('wh_history', JSON.stringify(state.searchHistory));
   updateHistoryPanel();
+  // API save happens automatically in /api/chat when authenticated
 }
 
 function updateHistoryPanel() {
@@ -1909,10 +2001,25 @@ function rerunSearch(q) { searchInput.value = q; searchInput.dispatchEvent(new E
 
 function toggleFavorite(person) {
   const idx = state.favorites.findIndex(f => f.name === person.name && f.company === person.company);
-  if (idx >= 0) state.favorites.splice(idx, 1); else state.favorites.unshift(person);
+  const removing = idx >= 0;
+  if (removing) state.favorites.splice(idx, 1); else state.favorites.unshift(person);
   localStorage.setItem('wh_favorites', JSON.stringify(state.favorites));
   updateFavoritesPanel();
   if (state.results) renderResults(state.results);
+  // Sync to API if authenticated
+  if (authUser) {
+    if (removing && person.linkedin_url) {
+      fetch('/api/favorites?linkedin_url=' + encodeURIComponent(person.linkedin_url), {
+        method: 'DELETE', headers: getAuthHeaders(),
+      }).catch(() => {});
+    } else if (!removing) {
+      fetch('/api/favorites', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
+        body: JSON.stringify({ person, linkedin_url: person.linkedin_url || '' }),
+      }).catch(() => {});
+    }
+  }
 }
 
 function updateFavoritesPanel() {
@@ -2090,6 +2197,7 @@ async function typeInto(el, text) {
 // INIT
 // ═══════════════════════════════════════
 showLanding();
+checkAuth(); // Load user session + sync history/favorites from API
 </script>
 </body>
 </html>
