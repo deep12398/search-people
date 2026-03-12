@@ -3,51 +3,50 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>WaveHeart - AI People Search</title>
+<title>WaveHeart - Searching for a Soulmate</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Open+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 
 :root {
-  --primary: #2563EB;
-  --primary-dark: #1D4ED8;
-  --primary-light: #EFF6FF;
-  --primary-glow: rgba(37,99,235,0.08);
-  --secondary: #3B82F6;
-  --cta: #F97316;
-  --cta-dark: #EA580C;
-  --cta-light: #FFF7ED;
+  --purple: #7C3AED;
+  --purple-light: #A78BFA;
+  --purple-dark: #5B21B6;
+  --purple-glow: rgba(124,58,237,0.15);
+  --purple-subtle: rgba(124,58,237,0.08);
+  --green-accent: #22C55E;
+  --green-glow: rgba(34,197,94,0.12);
+  --cyan-accent: #06B6D4;
 
-  --bg: #F8FAFC;
-  --bg-white: #FFFFFF;
-  --bg-elevated: #F1F5F9;
-  --text: #1E293B;
-  --text-secondary: #475569;
-  --text-tertiary: #94A3B8;
-  --border: #E2E8F0;
-  --border-strong: #CBD5E1;
+  --bg-deep: #08060F;
+  --bg-surface: #110E1A;
+  --bg-card: #18142A;
+  --bg-elevated: #1F1A35;
+  --bg-input: #13102080;
 
-  --accent-recruiting: #7C3AED;
-  --accent-marketing: #0F766E;
-  --accent-kol: #DB2777;
-  --accent-sales: #B45309;
+  --text: #F1F0F5;
+  --text-secondary: #A09CB2;
+  --text-tertiary: #6B6580;
+  --text-muted: #4A4560;
+  --border: rgba(124,58,237,0.15);
+  --border-strong: rgba(124,58,237,0.3);
 
-  --radius: 12px;
-  --radius-sm: 8px;
+  --radius: 14px;
+  --radius-sm: 10px;
   --radius-xs: 6px;
-  --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
-  --shadow: 0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06);
-  --shadow-md: 0 4px 6px rgba(0,0,0,0.07), 0 2px 4px rgba(0,0,0,0.06);
-  --shadow-lg: 0 10px 25px rgba(0,0,0,0.08), 0 4px 10px rgba(0,0,0,0.04);
-  --shadow-xl: 0 20px 50px rgba(0,0,0,0.1), 0 8px 16px rgba(0,0,0,0.06);
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.3);
+  --shadow: 0 2px 8px rgba(0,0,0,0.4);
+  --shadow-md: 0 4px 16px rgba(0,0,0,0.5);
+  --shadow-lg: 0 8px 32px rgba(0,0,0,0.6);
+  --shadow-glow: 0 0 30px rgba(124,58,237,0.2);
 
-  --font-heading: 'Poppins', -apple-system, sans-serif;
-  --font-body: 'Open Sans', -apple-system, sans-serif;
+  --font-heading: 'Playfair Display', Georgia, 'Times New Roman', serif;
+  --font-body: 'Inter', -apple-system, sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
 
   --transition: 0.2s ease;
-  --transition-slow: 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 html { font-size: 16px; -webkit-font-smoothing: antialiased; }
@@ -55,7 +54,7 @@ html { font-size: 16px; -webkit-font-smoothing: antialiased; }
 body {
   font-family: var(--font-body);
   color: var(--text);
-  background: var(--bg);
+  background: var(--bg-deep);
   min-height: 100vh;
   overflow-x: hidden;
 }
@@ -63,19 +62,135 @@ body {
 a { color: inherit; text-decoration: none; }
 button { font-family: var(--font-body); }
 
-/* ═══════════════════════════════════════════════
-   LANDING PAGE
-   ═══════════════════════════════════════════════ */
+/* ═══════════════════════════════════════
+   MESH WAVE BACKGROUND
+   ═══════════════════════════════════════ */
+.mesh-bg {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
 
-.landing { display: flex; flex-direction: column; min-height: 100vh; }
+.mesh-bg::before {
+  content: '';
+  position: absolute;
+  top: 30%;
+  left: -10%;
+  width: 120%;
+  height: 70%;
+  background:
+    radial-gradient(ellipse 80% 50% at 30% 60%, rgba(124,58,237,0.12) 0%, transparent 50%),
+    radial-gradient(ellipse 60% 40% at 70% 50%, rgba(34,197,94,0.08) 0%, transparent 50%),
+    radial-gradient(ellipse 90% 60% at 50% 80%, rgba(124,58,237,0.06) 0%, transparent 50%);
+  animation: meshDrift 20s ease-in-out infinite alternate;
+}
 
-/* ── Top Nav ── */
+.mesh-bg::after {
+  content: '';
+  position: absolute;
+  top: 10%;
+  right: -5%;
+  width: 60%;
+  height: 80%;
+  background:
+    radial-gradient(ellipse 70% 50% at 60% 40%, rgba(34,197,94,0.06) 0%, transparent 50%),
+    radial-gradient(ellipse 50% 40% at 40% 60%, rgba(124,58,237,0.08) 0%, transparent 50%);
+  animation: meshDrift 25s ease-in-out infinite alternate-reverse;
+}
+
+@keyframes meshDrift {
+  0% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-20px) scale(1.02); }
+  100% { transform: translateY(10px) scale(0.98); }
+}
+
+/* Grid overlay (wireframe mesh feel) */
+.mesh-grid {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.03;
+  background-image:
+    linear-gradient(rgba(124,58,237,0.5) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(124,58,237,0.5) 1px, transparent 1px);
+  background-size: 60px 60px;
+  mask-image: radial-gradient(ellipse 80% 60% at 50% 60%, black 20%, transparent 70%);
+  -webkit-mask-image: radial-gradient(ellipse 80% 60% at 50% 60%, black 20%, transparent 70%);
+}
+
+/* ═══════════════════════════════════════
+   BAT LOGO SVG (inline reusable)
+   ═══════════════════════════════════════ */
+.bat-logo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.bat-logo svg {
+  width: 100%;
+  height: 100%;
+}
+
+/* ═══════════════════════════════════════
+   BUTTONS
+   ═══════════════════════════════════════ */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.55rem 1.4rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition);
+  border: none;
+  white-space: nowrap;
+}
+
+.btn-primary {
+  background: var(--purple);
+  color: white;
+  box-shadow: 0 2px 12px rgba(124,58,237,0.4);
+}
+.btn-primary:hover { background: var(--purple-light); box-shadow: 0 4px 20px rgba(124,58,237,0.5); }
+
+.btn-ghost {
+  background: transparent;
+  color: var(--text-secondary);
+  border: 1px solid var(--border-strong);
+}
+.btn-ghost:hover { border-color: var(--purple); color: var(--text); }
+
+.btn-lg {
+  padding: 0.8rem 2.2rem;
+  font-size: 1rem;
+  border-radius: var(--radius);
+}
+
+/* ═══════════════════════════════════════
+   PAGE 1: LANDING
+   ═══════════════════════════════════════ */
+.landing {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  position: relative;
+  z-index: 1;
+}
+
+/* Top Nav */
 .top-nav {
   position: sticky;
   top: 0;
   z-index: 100;
-  background: rgba(255,255,255,0.92);
-  backdrop-filter: blur(16px) saturate(1.4);
+  background: rgba(8,6,15,0.85);
+  backdrop-filter: blur(20px) saturate(1.4);
   border-bottom: 1px solid var(--border);
   height: 64px;
   display: flex;
@@ -95,45 +210,22 @@ button { font-family: var(--font-body); }
 .nav-brand {
   display: flex;
   align-items: center;
-  gap: 0.6rem;
+  gap: 0.65rem;
   cursor: pointer;
 }
 
-.nav-brand-icon {
-  width: 32px;
-  height: 32px;
-  background: var(--primary);
-  border-radius: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  overflow: hidden;
-}
-
-.nav-brand-icon::after {
-  content: '';
-  position: absolute;
-  bottom: -3px;
-  left: -4px;
-  right: -4px;
-  height: 14px;
-  background: rgba(255,255,255,0.3);
-  border-radius: 50%;
-  animation: wavePulse 3s ease-in-out infinite;
-}
-
-@keyframes wavePulse {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-3px); }
+.nav-brand .bat-logo {
+  width: 36px;
+  height: 24px;
+  color: var(--purple-light);
 }
 
 .nav-brand-text {
   font-family: var(--font-heading);
-  font-size: 1.25rem;
-  font-weight: 700;
+  font-size: 1.3rem;
+  font-weight: 600;
   color: var(--text);
-  letter-spacing: -0.02em;
+  letter-spacing: -0.01em;
 }
 
 .nav-links {
@@ -143,7 +235,7 @@ button { font-family: var(--font-body); }
 }
 
 .nav-link {
-  font-size: 0.9rem;
+  font-size: 0.88rem;
   font-weight: 500;
   color: var(--text-secondary);
   cursor: pointer;
@@ -152,7 +244,6 @@ button { font-family: var(--font-body); }
   border: none;
   padding: 0;
 }
-
 .nav-link:hover { color: var(--text); }
 
 .nav-actions {
@@ -161,71 +252,16 @@ button { font-family: var(--font-body); }
   gap: 0.75rem;
 }
 
-.btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.4rem;
-  padding: 0.5rem 1.25rem;
-  border-radius: var(--radius-sm);
-  font-size: 0.88rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all var(--transition);
-  border: none;
-  white-space: nowrap;
-}
-
-.btn-ghost {
-  background: transparent;
-  color: var(--text-secondary);
-  border: 1px solid var(--border);
-}
-.btn-ghost:hover { border-color: var(--border-strong); color: var(--text); }
-
-.btn-primary {
-  background: var(--primary);
-  color: white;
-  box-shadow: 0 1px 2px rgba(37,99,235,0.3);
-}
-.btn-primary:hover { background: var(--primary-dark); }
-
-.btn-cta {
-  background: var(--cta);
-  color: white;
-  box-shadow: 0 1px 2px rgba(249,115,22,0.3);
-}
-.btn-cta:hover { background: var(--cta-dark); }
-
-.btn-lg {
-  padding: 0.75rem 2rem;
-  font-size: 1rem;
-  border-radius: var(--radius);
-}
-
-/* ── Hero Section ── */
+/* Hero Section */
 .hero-section {
   flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 4rem 2rem 3rem;
+  padding: 5rem 2rem 3rem;
   text-align: center;
   position: relative;
-  overflow: hidden;
-}
-
-.hero-section::before {
-  content: '';
-  position: absolute;
-  top: -200px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 900px;
-  height: 600px;
-  background: radial-gradient(ellipse, rgba(37,99,235,0.06) 0%, transparent 70%);
-  pointer-events: none;
 }
 
 .hero-badge {
@@ -233,41 +269,42 @@ button { font-family: var(--font-body); }
   align-items: center;
   gap: 0.5rem;
   padding: 0.4rem 1rem;
-  background: var(--primary-light);
-  color: var(--primary);
+  background: var(--purple-subtle);
+  color: var(--purple-light);
   border-radius: 100px;
   font-size: 0.82rem;
   font-weight: 600;
-  margin-bottom: 2rem;
-  border: 1px solid rgba(37,99,235,0.15);
+  margin-bottom: 2.5rem;
+  border: 1px solid var(--border);
 }
 
 .hero-badge svg { width: 14px; height: 14px; }
 
 .hero-title {
   font-family: var(--font-heading);
-  font-size: clamp(2.5rem, 5vw, 3.8rem);
-  font-weight: 700;
+  font-size: clamp(2.8rem, 5.5vw, 4.5rem);
+  font-weight: 600;
   line-height: 1.15;
-  letter-spacing: -0.03em;
+  letter-spacing: -0.02em;
   color: var(--text);
-  max-width: 800px;
-  margin-bottom: 1.25rem;
+  max-width: 850px;
+  margin-bottom: 1.5rem;
 }
 
 .hero-title em {
-  font-style: normal;
-  background: linear-gradient(135deg, var(--primary), #7C3AED);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  font-style: italic;
+  color: var(--purple-light);
+}
+
+.hero-title .green-word {
+  color: var(--green-accent);
 }
 
 .hero-subtitle {
-  font-size: 1.15rem;
-  line-height: 1.6;
+  font-size: 1.1rem;
+  line-height: 1.7;
   color: var(--text-secondary);
-  max-width: 600px;
+  max-width: 580px;
   margin-bottom: 2.5rem;
 }
 
@@ -275,10 +312,10 @@ button { font-family: var(--font-body); }
   display: flex;
   align-items: center;
   gap: 1rem;
-  margin-bottom: 3rem;
+  margin-bottom: 3.5rem;
 }
 
-/* ── Landing Search Bar ── */
+/* Landing Search */
 .landing-search {
   width: 100%;
   max-width: 680px;
@@ -289,37 +326,37 @@ button { font-family: var(--font-body); }
 .landing-search-box {
   display: flex;
   align-items: center;
-  background: var(--bg-white);
-  border: 2px solid var(--border);
-  border-radius: 16px;
-  box-shadow: var(--shadow-lg);
-  padding: 0.35rem;
+  background: var(--bg-card);
+  border: 1.5px solid var(--border);
+  border-radius: 60px;
+  box-shadow: var(--shadow-md), var(--shadow-glow);
+  padding: 0.3rem 0.35rem 0.3rem 0;
   transition: all var(--transition);
 }
 
 .landing-search-box:focus-within {
-  border-color: var(--primary);
-  box-shadow: var(--shadow-lg), 0 0 0 4px var(--primary-glow);
+  border-color: var(--purple);
+  box-shadow: var(--shadow-lg), 0 0 40px rgba(124,58,237,0.25);
 }
 
 .landing-search-input {
   flex: 1;
-  padding: 0.9rem 1.15rem;
+  padding: 0.85rem 1.25rem;
   border: none;
   background: transparent;
   font-family: var(--font-body);
-  font-size: 1rem;
+  font-size: 0.95rem;
   color: var(--text);
   outline: none;
 }
 
-.landing-search-input::placeholder { color: var(--text-tertiary); }
+.landing-search-input::placeholder { color: var(--text-muted); }
 
 .landing-search-btn {
-  width: 48px;
-  height: 48px;
-  border-radius: 12px;
-  background: var(--primary);
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: var(--purple);
   border: none;
   color: white;
   cursor: pointer;
@@ -328,23 +365,24 @@ button { font-family: var(--font-body); }
   justify-content: center;
   transition: all var(--transition);
   flex-shrink: 0;
+  box-shadow: 0 2px 12px rgba(124,58,237,0.4);
 }
 
-.landing-search-btn:hover { background: var(--primary-dark); }
-.landing-search-btn svg { width: 20px; height: 20px; }
+.landing-search-btn:hover { background: var(--purple-light); box-shadow: 0 4px 20px rgba(124,58,237,0.5); }
+.landing-search-btn svg { width: 18px; height: 18px; }
 
-/* ── Trust Logos ── */
+/* Trust Section */
 .trust-section {
   padding: 2rem 2rem 3rem;
   text-align: center;
 }
 
 .trust-label {
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: var(--text-tertiary);
+  letter-spacing: 0.12em;
+  color: var(--text-muted);
   margin-bottom: 1.25rem;
 }
 
@@ -354,33 +392,30 @@ button { font-family: var(--font-body); }
   justify-content: center;
   gap: 3rem;
   flex-wrap: wrap;
-  opacity: 0.4;
+  opacity: 0.3;
 }
 
 .trust-logo {
   font-family: var(--font-heading);
-  font-size: 1.1rem;
-  font-weight: 700;
-  color: var(--text);
-  letter-spacing: -0.02em;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-secondary);
 }
 
-/* ── Features Section ── */
+/* Features */
 .features-section {
-  padding: 3rem 2rem 4rem;
-  background: var(--bg-white);
+  padding: 4rem 2rem 5rem;
   border-top: 1px solid var(--border);
+  position: relative;
+  z-index: 1;
 }
 
-.features-inner {
-  max-width: 1000px;
-  margin: 0 auto;
-}
+.features-inner { max-width: 1000px; margin: 0 auto; }
 
 .features-title {
   font-family: var(--font-heading);
-  font-size: 1.75rem;
-  font-weight: 700;
+  font-size: 2rem;
+  font-weight: 600;
   text-align: center;
   margin-bottom: 0.75rem;
   letter-spacing: -0.02em;
@@ -389,8 +424,8 @@ button { font-family: var(--font-body); }
 .features-sub {
   text-align: center;
   color: var(--text-secondary);
-  font-size: 1.05rem;
-  margin-bottom: 2.5rem;
+  font-size: 1rem;
+  margin-bottom: 3rem;
 }
 
 .features-grid {
@@ -400,39 +435,39 @@ button { font-family: var(--font-body); }
 }
 
 .feature-card {
-  padding: 1.75rem;
+  padding: 2rem;
   border-radius: var(--radius);
   border: 1px solid var(--border);
-  background: var(--bg);
+  background: var(--bg-surface);
   transition: all var(--transition);
 }
 
 .feature-card:hover {
   border-color: var(--border-strong);
-  box-shadow: var(--shadow-md);
-  transform: translateY(-2px);
+  box-shadow: var(--shadow-glow);
+  transform: translateY(-3px);
 }
 
 .feature-icon {
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 1rem;
+  margin-bottom: 1.25rem;
   color: white;
 }
 
 .feature-icon svg { width: 22px; height: 22px; }
 
-.feature-card:nth-child(1) .feature-icon { background: linear-gradient(135deg, #2563EB, #3B82F6); }
-.feature-card:nth-child(2) .feature-icon { background: linear-gradient(135deg, #7C3AED, #8B5CF6); }
-.feature-card:nth-child(3) .feature-icon { background: linear-gradient(135deg, #0F766E, #14B8A6); }
+.feature-card:nth-child(1) .feature-icon { background: linear-gradient(135deg, #7C3AED, #A78BFA); }
+.feature-card:nth-child(2) .feature-icon { background: linear-gradient(135deg, #22C55E, #4ADE80); }
+.feature-card:nth-child(3) .feature-icon { background: linear-gradient(135deg, #06B6D4, #22D3EE); }
 
 .feature-name {
   font-family: var(--font-heading);
-  font-size: 1.05rem;
+  font-size: 1.1rem;
   font-weight: 600;
   margin-bottom: 0.5rem;
 }
@@ -440,30 +475,31 @@ button { font-family: var(--font-body); }
 .feature-desc {
   font-size: 0.9rem;
   color: var(--text-secondary);
-  line-height: 1.6;
+  line-height: 1.65;
 }
 
-/* ── Landing Footer ── */
+/* Footer */
 .landing-footer {
   padding: 2rem;
   border-top: 1px solid var(--border);
   text-align: center;
   font-size: 0.82rem;
-  color: var(--text-tertiary);
+  color: var(--text-muted);
+  position: relative;
+  z-index: 1;
 }
 
-/* ═══════════════════════════════════════════════
-   APP PAGE (Search Dashboard)
-   ═══════════════════════════════════════════════ */
-
-.app-page { display: none; min-height: 100vh; }
+/* ═══════════════════════════════════════
+   PAGE 2: APP
+   ═══════════════════════════════════════ */
+.app-page { display: none; min-height: 100vh; position: relative; z-index: 1; }
 .app-page.active { display: flex; }
 
-/* ── App Sidebar ── */
+/* Sidebar */
 .app-sidebar {
   width: 260px;
   flex-shrink: 0;
-  background: var(--bg-white);
+  background: var(--bg-surface);
   border-right: 1px solid var(--border);
   position: fixed;
   top: 0;
@@ -481,114 +517,40 @@ button { font-family: var(--font-body); }
   border-bottom: 1px solid var(--border);
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  gap: 0.6rem;
 }
 
-.sidebar-brand {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  cursor: pointer;
-}
-
-.sidebar-brand-icon {
-  width: 28px;
-  height: 28px;
-  background: var(--primary);
-  border-radius: 8px;
-  position: relative;
-  overflow: hidden;
-}
-
-.sidebar-brand-icon::after {
-  content: '';
-  position: absolute;
-  bottom: -3px;
-  left: -4px;
-  right: -4px;
-  height: 12px;
-  background: rgba(255,255,255,0.3);
-  border-radius: 50%;
+.sidebar-header .bat-logo {
+  width: 32px;
+  height: 22px;
+  color: var(--purple-light);
 }
 
 .sidebar-brand-name {
   font-family: var(--font-heading);
-  font-size: 1.1rem;
-  font-weight: 700;
+  font-size: 1.15rem;
+  font-weight: 600;
   color: var(--text);
 }
 
-.sidebar-back-btn {
-  width: 30px;
-  height: 30px;
+.sidebar-collapse-btn {
+  margin-left: auto;
+  width: 28px;
+  height: 28px;
   border-radius: var(--radius-xs);
   border: 1px solid var(--border);
-  background: var(--bg);
+  background: transparent;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--text-secondary);
+  color: var(--text-tertiary);
   transition: all var(--transition);
 }
+.sidebar-collapse-btn:hover { border-color: var(--purple); color: var(--purple-light); }
+.sidebar-collapse-btn svg { width: 14px; height: 14px; }
 
-.sidebar-back-btn:hover { border-color: var(--border-strong); color: var(--text); }
-.sidebar-back-btn svg { width: 16px; height: 16px; }
-
-/* Account Section */
-.sidebar-account {
-  padding: 1rem 1.25rem;
-  border-bottom: 1px solid var(--border);
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-
-.account-avatar {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, var(--primary), #7C3AED);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-family: var(--font-heading);
-  font-size: 0.85rem;
-  font-weight: 600;
-  flex-shrink: 0;
-}
-
-.account-info {
-  flex: 1;
-  min-width: 0;
-}
-
-.account-name {
-  font-size: 0.88rem;
-  font-weight: 600;
-  color: var(--text);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.account-plan {
-  font-size: 0.72rem;
-  color: var(--text-tertiary);
-  display: flex;
-  align-items: center;
-  gap: 0.3rem;
-}
-
-.plan-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: #22C55E;
-}
-
-/* Nav Items */
+/* Sidebar Nav */
 .sidebar-nav {
   flex: 1;
   padding: 0.75rem 0.75rem;
@@ -598,19 +560,19 @@ button { font-family: var(--font-body); }
 }
 
 .sidebar-section-label {
-  font-size: 0.65rem;
+  font-size: 0.62rem;
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: var(--text-tertiary);
-  padding: 1rem 0.65rem 0.4rem;
+  letter-spacing: 0.12em;
+  color: var(--text-muted);
+  padding: 1.25rem 0.65rem 0.4rem;
 }
 
 .sidebar-item {
   display: flex;
   align-items: center;
   gap: 0.65rem;
-  padding: 0.55rem 0.75rem;
+  padding: 0.6rem 0.75rem;
   border-radius: var(--radius-sm);
   font-size: 0.88rem;
   font-weight: 450;
@@ -626,25 +588,25 @@ button { font-family: var(--font-body); }
 .sidebar-item:hover { background: var(--bg-elevated); color: var(--text); }
 
 .sidebar-item.active {
-  background: var(--primary-light);
-  color: var(--primary);
+  background: var(--purple-subtle);
+  color: var(--purple-light);
   font-weight: 550;
+  border: 1px solid var(--border);
 }
 
 .sidebar-item svg {
   width: 18px;
   height: 18px;
   flex-shrink: 0;
-  opacity: 0.7;
+  opacity: 0.65;
 }
-
 .sidebar-item.active svg { opacity: 1; }
 
 .sidebar-item-badge {
   margin-left: auto;
   background: var(--bg-elevated);
-  color: var(--text-tertiary);
-  font-size: 0.68rem;
+  color: var(--text-muted);
+  font-size: 0.65rem;
   font-weight: 600;
   padding: 0.15rem 0.5rem;
   border-radius: 100px;
@@ -652,23 +614,96 @@ button { font-family: var(--font-body); }
 }
 
 .sidebar-item.active .sidebar-item-badge {
-  background: rgba(37,99,235,0.1);
-  color: var(--primary);
+  background: rgba(124,58,237,0.15);
+  color: var(--purple-light);
 }
 
-/* Sidebar Footer */
-.sidebar-footer {
-  padding: 0.75rem 1.25rem;
+/* Sidebar Account (bottom) */
+.sidebar-account {
+  padding: 0.85rem 1.25rem;
   border-top: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
 }
 
-.sidebar-footer-text {
-  font-size: 0.72rem;
+.account-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--purple), var(--purple-dark));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-family: var(--font-heading);
+  font-size: 0.78rem;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.account-info { flex: 1; min-width: 0; }
+
+.account-name {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.account-email {
+  font-size: 0.68rem;
+  color: var(--text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.account-settings-btn {
+  width: 24px;
+  height: 24px;
+  border: none;
+  background: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color var(--transition);
+}
+.account-settings-btn:hover { color: var(--purple-light); }
+.account-settings-btn svg { width: 14px; height: 14px; }
+
+/* Sidebar panels */
+.sidebar-panel { padding: 0.25rem 0.75rem; }
+
+.sidebar-panel-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.55rem;
+  border-radius: var(--radius-xs);
+  font-size: 0.78rem;
   color: var(--text-tertiary);
-  font-family: var(--font-mono);
+  cursor: pointer;
+  transition: all var(--transition);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.sidebar-panel-item:hover { background: var(--bg-elevated); color: var(--text-secondary); }
+.sidebar-panel-item svg { width: 13px; height: 13px; flex-shrink: 0; opacity: 0.5; }
+
+.sidebar-empty {
+  padding: 0.5rem 0.55rem;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  font-style: italic;
 }
 
-/* ── App Main Area ── */
+/* Main Area */
 .app-main {
   flex: 1;
   margin-left: 260px;
@@ -677,36 +712,50 @@ button { font-family: var(--font-body); }
   flex-direction: column;
 }
 
-/* App Top Bar */
+/* Mobile toggle */
+.mobile-toggle {
+  display: none;
+  width: 38px;
+  height: 38px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  position: fixed;
+  top: 0.75rem;
+  left: 0.75rem;
+  z-index: 200;
+}
+.mobile-toggle svg { width: 18px; height: 18px; color: var(--text); }
+
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(8,6,15,0.6);
+  backdrop-filter: blur(4px);
+  z-index: 140;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+.sidebar-overlay.visible { opacity: 1; }
+
+/* Top Bar */
 .app-topbar {
   position: sticky;
   top: 0;
   z-index: 100;
-  background: rgba(248,250,252,0.92);
-  backdrop-filter: blur(16px) saturate(1.4);
+  background: rgba(8,6,15,0.8);
+  backdrop-filter: blur(20px);
   border-bottom: 1px solid var(--border);
   padding: 0 2rem;
-  height: 56px;
+  height: 52px;
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-end;
 }
-
-.topbar-left {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
-
-.topbar-breadcrumb {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-  font-size: 0.85rem;
-  color: var(--text-tertiary);
-}
-
-.topbar-breadcrumb span { color: var(--text); font-weight: 500; }
 
 .topbar-right {
   display: flex;
@@ -714,105 +763,64 @@ button { font-family: var(--font-body); }
   gap: 0.75rem;
 }
 
-/* Mobile toggle */
-.mobile-toggle {
-  display: none;
-  width: 36px;
-  height: 36px;
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--border);
-  background: var(--bg-white);
-  cursor: pointer;
-  align-items: center;
-  justify-content: center;
-  box-shadow: var(--shadow-sm);
-  position: fixed;
-  top: 0.75rem;
-  left: 0.75rem;
-  z-index: 200;
-}
-
-.mobile-toggle svg { width: 18px; height: 18px; color: var(--text); }
-
-.sidebar-overlay {
-  display: none;
-  position: fixed;
-  inset: 0;
-  background: rgba(30,41,59,0.3);
-  backdrop-filter: blur(4px);
-  z-index: 140;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-
-.sidebar-overlay.visible { opacity: 1; }
-
 /* ── Search Area ── */
 .search-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   padding: 2rem 2rem 1rem;
-  max-width: 960px;
+  max-width: 800px;
   width: 100%;
+  margin: 0 auto;
 }
 
-.search-header {
+.search-hero-title {
+  font-family: var(--font-heading);
+  font-size: clamp(1.8rem, 3.5vw, 2.8rem);
+  font-weight: 600;
+  text-align: center;
+  margin-bottom: 0.75rem;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+.search-hero-title .purple-word { color: var(--purple-light); }
+.search-hero-title .green-word { color: var(--green-accent); }
+
+.search-hero-sub {
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  margin-bottom: 2.5rem;
+  max-width: 500px;
+}
+
+/* App Search Box */
+.app-search-box {
+  width: 100%;
+  max-width: 700px;
+  position: relative;
+  background: var(--bg-card);
+  border: 1.5px solid var(--border);
+  border-radius: 60px;
+  box-shadow: var(--shadow), var(--shadow-glow);
+  transition: all var(--transition);
   display: flex;
   align-items: center;
-  gap: 1rem;
+  padding: 0.3rem 0.35rem 0.3rem 0;
   margin-bottom: 1.5rem;
 }
 
-.search-title {
-  font-family: var(--font-heading);
-  font-size: 1.5rem;
-  font-weight: 700;
-  letter-spacing: -0.02em;
-}
-
-/* Scenario pills */
-.app-scenarios {
-  display: flex;
-  gap: 0.5rem;
-  margin-bottom: 1rem;
-  flex-wrap: wrap;
-}
-
-.scenario-chip {
-  padding: 0.35rem 0.85rem;
-  border-radius: 100px;
-  border: 1.5px solid var(--border);
-  background: var(--bg-white);
-  font-size: 0.82rem;
-  font-weight: 500;
-  color: var(--text-secondary);
-  cursor: pointer;
-  transition: all var(--transition);
-  display: flex;
-  align-items: center;
-  gap: 0.35rem;
-}
-
-.scenario-chip:hover { border-color: var(--border-strong); background: var(--bg-elevated); }
-.scenario-chip.active { border-color: var(--primary); background: var(--primary-light); color: var(--primary); }
-
-/* Search Box */
-.app-search-box {
-  position: relative;
-  background: var(--bg-white);
-  border: 1.5px solid var(--border);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
-  transition: all var(--transition);
-  overflow: hidden;
-}
-
 .app-search-box:focus-within {
-  border-color: var(--primary);
-  box-shadow: var(--shadow-md), 0 0 0 3px var(--primary-glow);
+  border-color: var(--purple);
+  box-shadow: var(--shadow-lg), 0 0 40px rgba(124,58,237,0.25);
 }
 
 .app-search-input {
-  width: 100%;
-  padding: 0.9rem 3.5rem 0.9rem 1.15rem;
+  flex: 1;
+  padding: 0.85rem 1.25rem;
   border: none;
   background: transparent;
   font-family: var(--font-body);
@@ -821,20 +829,17 @@ button { font-family: var(--font-body); }
   outline: none;
   resize: none;
   line-height: 1.5;
-  min-height: 52px;
+  min-height: 50px;
   max-height: 120px;
 }
 
-.app-search-input::placeholder { color: var(--text-tertiary); }
+.app-search-input::placeholder { color: var(--text-muted); }
 
 .app-search-btn {
-  position: absolute;
-  right: 0.6rem;
-  bottom: 0.6rem;
-  width: 36px;
-  height: 36px;
-  border-radius: var(--radius-xs);
-  background: var(--primary);
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--purple);
   border: none;
   color: white;
   cursor: pointer;
@@ -842,38 +847,37 @@ button { font-family: var(--font-body); }
   align-items: center;
   justify-content: center;
   transition: all var(--transition);
+  flex-shrink: 0;
+  box-shadow: 0 2px 12px rgba(124,58,237,0.4);
 }
 
-.app-search-btn:hover { background: var(--primary-dark); }
-.app-search-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.app-search-btn:hover { background: var(--purple-light); }
+.app-search-btn:disabled { opacity: 0.3; cursor: not-allowed; }
 .app-search-btn svg { width: 18px; height: 18px; }
 
 .search-loading-bar {
   position: absolute;
   bottom: 0;
-  left: 0;
-  right: 0;
+  left: 10%;
+  right: 10%;
   height: 2px;
-  background: var(--border);
+  border-radius: 2px;
+  background: var(--bg-elevated);
   overflow: hidden;
   opacity: 0;
   transition: opacity 0.3s;
 }
-
 .search-loading-bar.active { opacity: 1; }
-
 .search-loading-bar::after {
   content: '';
   position: absolute;
   inset: 0;
-  background: var(--primary);
+  background: linear-gradient(90deg, var(--purple), var(--green-accent));
   animation: loadSlide 1.5s ease-in-out infinite;
-  transform-origin: left;
 }
-
 @keyframes loadSlide {
   0% { transform: translateX(-100%); }
-  50% { transform: translateX(0%); }
+  50% { transform: translateX(0); }
   100% { transform: translateX(100%); }
 }
 
@@ -882,15 +886,17 @@ button { font-family: var(--font-body); }
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-  margin-top: 0.75rem;
+  width: 100%;
+  max-width: 700px;
+  margin-top: 0.5rem;
 }
 
 .chat-bubble {
   max-width: 85%;
-  padding: 0.6rem 0.9rem;
+  padding: 0.65rem 1rem;
   border-radius: var(--radius-sm);
   font-size: 0.88rem;
-  line-height: 1.5;
+  line-height: 1.55;
   animation: fadeUp 0.3s ease both;
 }
 
@@ -903,40 +909,41 @@ button { font-family: var(--font-body); }
 
 .chat-bubble.ai {
   align-self: flex-start;
-  background: var(--bg-white);
+  background: var(--bg-card);
   color: var(--text);
   border: 1px solid var(--border);
-  border-left: 3px solid var(--primary);
-  box-shadow: var(--shadow-sm);
+  border-left: 3px solid var(--purple);
 }
 
 .chat-bubble.ai::before {
   content: 'AI';
-  font-size: 0.6rem;
+  font-size: 0.58rem;
   font-weight: 700;
-  letter-spacing: 0.08em;
-  color: var(--primary);
+  letter-spacing: 0.1em;
+  color: var(--purple-light);
   display: block;
   margin-bottom: 0.2rem;
 }
 
-/* ── Example Cards (app) ── */
+/* Example Cards */
 .app-examples {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 0.5rem;
-  margin-top: 1.25rem;
+  width: 100%;
+  max-width: 700px;
+  margin-top: 1rem;
 }
 
 .app-example {
   padding: 0.85rem 1rem;
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
-  background: var(--bg-white);
+  background: var(--bg-surface);
   cursor: pointer;
   transition: all var(--transition);
   font-size: 0.85rem;
-  color: var(--text);
+  color: var(--text-secondary);
   line-height: 1.45;
   position: relative;
   overflow: hidden;
@@ -949,40 +956,38 @@ button { font-family: var(--font-body); }
   top: 0;
   bottom: 0;
   width: 3px;
-  transition: width var(--transition);
 }
 
-.app-example:nth-child(1)::before { background: var(--accent-recruiting); }
-.app-example:nth-child(2)::before { background: var(--accent-marketing); }
-.app-example:nth-child(3)::before { background: var(--accent-kol); }
-.app-example:nth-child(4)::before { background: var(--accent-sales); }
+.app-example:nth-child(1)::before { background: var(--purple); }
+.app-example:nth-child(2)::before { background: var(--green-accent); }
+.app-example:nth-child(3)::before { background: var(--cyan-accent); }
+.app-example:nth-child(4)::before { background: var(--purple-light); }
 
 .app-example:hover {
   border-color: var(--border-strong);
+  background: var(--bg-card);
   transform: translateY(-1px);
-  box-shadow: var(--shadow-md);
 }
-
-.app-example:hover::before { width: 4px; }
 
 .app-example-label {
-  font-size: 0.65rem;
+  font-size: 0.62rem;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.1em;
   font-weight: 600;
-  margin-bottom: 0.2rem;
+  margin-bottom: 0.25rem;
 }
 
-.app-example:nth-child(1) .app-example-label { color: var(--accent-recruiting); }
-.app-example:nth-child(2) .app-example-label { color: var(--accent-marketing); }
-.app-example:nth-child(3) .app-example-label { color: var(--accent-kol); }
-.app-example:nth-child(4) .app-example-label { color: var(--accent-sales); }
+.app-example:nth-child(1) .app-example-label { color: var(--purple-light); }
+.app-example:nth-child(2) .app-example-label { color: var(--green-accent); }
+.app-example:nth-child(3) .app-example-label { color: var(--cyan-accent); }
+.app-example:nth-child(4) .app-example-label { color: var(--purple-light); }
 
 /* ── Results ── */
 .results-container {
   padding: 0 2rem 4rem;
-  max-width: 960px;
+  max-width: 900px;
   width: 100%;
+  margin: 0 auto;
 }
 
 .results-meta-bar {
@@ -994,20 +999,21 @@ button { font-family: var(--font-body); }
 }
 
 .results-count {
-  font-size: 0.82rem;
-  color: var(--text-tertiary);
+  font-size: 0.78rem;
+  color: var(--text-muted);
   font-family: var(--font-mono);
 }
 
 .results-scenario-tag {
-  font-size: 0.72rem;
+  font-size: 0.68rem;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: var(--primary);
-  background: var(--primary-light);
-  padding: 0.25rem 0.6rem;
+  color: var(--purple-light);
+  background: var(--purple-subtle);
+  padding: 0.25rem 0.65rem;
   border-radius: 100px;
+  border: 1px solid var(--border);
 }
 
 .results-summary {
@@ -1020,8 +1026,8 @@ button { font-family: var(--font-body); }
 
 .results-sql {
   font-family: var(--font-mono);
-  font-size: 0.68rem;
-  color: var(--text-tertiary);
+  font-size: 0.65rem;
+  color: var(--text-muted);
   padding: 0.35rem 0;
   margin-bottom: 0.5rem;
   overflow: hidden;
@@ -1031,40 +1037,33 @@ button { font-family: var(--font-body); }
   transition: all var(--transition);
   animation: fadeUp 0.45s ease both;
 }
-
 .results-sql:hover { color: var(--text-secondary); }
 .results-sql::before { content: 'SQL: '; font-weight: 600; opacity: 0.5; }
 
-/* Narrowing / broadening */
+/* Suggestion box */
 .suggestion-box {
-  background: var(--bg-white);
+  background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 1rem 1.25rem;
-  margin-bottom: 1.25rem;
+  margin-bottom: 1rem;
   animation: fadeUp 0.5s ease both;
-  box-shadow: var(--shadow-sm);
 }
 
 .suggestion-title {
-  font-size: 0.78rem;
+  font-size: 0.75rem;
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--primary);
+  letter-spacing: 0.08em;
+  color: var(--purple-light);
   margin-bottom: 0.5rem;
 }
 
-.suggestion-list {
-  list-style: none;
-  display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
-}
+.suggestion-list { list-style: none; display: flex; flex-direction: column; gap: 0.3rem; }
 
 .suggestion-item {
-  font-size: 0.88rem;
-  color: var(--text);
+  font-size: 0.85rem;
+  color: var(--text-secondary);
   padding: 0.4rem 0.7rem;
   border-radius: var(--radius-xs);
   cursor: pointer;
@@ -1073,14 +1072,15 @@ button { font-family: var(--font-body); }
 }
 
 .suggestion-item:hover {
-  border-color: var(--primary);
-  background: var(--primary-light);
+  border-color: var(--purple);
+  background: var(--purple-subtle);
+  color: var(--text);
   transform: translateX(4px);
 }
 
-/* ── Person Cards (Table-like) ── */
+/* Person Rows */
 .person-row {
-  background: var(--bg-white);
+  background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 1rem 1.25rem;
@@ -1102,16 +1102,15 @@ button { font-family: var(--font-body); }
   top: 0;
   bottom: 0;
   width: 3px;
-  background: var(--primary);
+  background: var(--purple);
   opacity: 0;
   transition: opacity var(--transition);
 }
 
 .person-row:hover {
   border-color: var(--border-strong);
-  box-shadow: var(--shadow-md);
+  box-shadow: var(--shadow-glow);
 }
-
 .person-row:hover::before { opacity: 1; }
 
 .person-avatar {
@@ -1126,13 +1125,9 @@ button { font-family: var(--font-body); }
   font-weight: 600;
   color: white;
   flex-shrink: 0;
-  letter-spacing: 0.02em;
 }
 
-.person-info {
-  flex: 1;
-  min-width: 0;
-}
+.person-info { flex: 1; min-width: 0; }
 
 .person-name {
   font-family: var(--font-heading);
@@ -1143,48 +1138,44 @@ button { font-family: var(--font-body); }
 }
 
 .person-title-co {
-  font-size: 0.85rem;
+  font-size: 0.82rem;
   color: var(--text-secondary);
   line-height: 1.4;
   margin-top: 0.1rem;
 }
-
-.person-title-co strong {
-  color: var(--text);
-  font-weight: 600;
-}
+.person-title-co strong { color: var(--text); font-weight: 600; }
 
 .person-tags {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.35rem;
-  margin-top: 0.5rem;
+  gap: 0.3rem;
+  margin-top: 0.45rem;
 }
 
 .person-tag {
-  font-size: 0.72rem;
-  padding: 0.2rem 0.55rem;
+  font-size: 0.68rem;
+  padding: 0.18rem 0.5rem;
   border-radius: 100px;
   background: var(--bg-elevated);
-  color: var(--text-secondary);
+  color: var(--text-tertiary);
   border: 1px solid var(--border);
   white-space: nowrap;
   font-weight: 500;
 }
 
-.person-tag.loc { color: #1D4ED8; background: #EFF6FF; border-color: #DBEAFE; }
-.person-tag.ind { color: #7C3AED; background: #F5F3FF; border-color: #EDE9FE; }
-.person-tag.sz  { color: #0F766E; background: #F0FDFA; border-color: #CCFBF1; }
+.person-tag.loc { color: var(--purple-light); background: var(--purple-subtle); border-color: rgba(124,58,237,0.2); }
+.person-tag.ind { color: var(--green-accent); background: var(--green-glow); border-color: rgba(34,197,94,0.2); }
+.person-tag.sz  { color: var(--cyan-accent); background: rgba(6,182,212,0.1); border-color: rgba(6,182,212,0.2); }
 
 .person-reason {
-  font-size: 0.82rem;
+  font-size: 0.8rem;
   color: var(--text-secondary);
-  margin-top: 0.45rem;
+  margin-top: 0.4rem;
   line-height: 1.5;
-  padding: 0.35rem 0.65rem;
+  padding: 0.3rem 0.6rem;
   background: var(--bg-elevated);
   border-radius: var(--radius-xs);
-  border-left: 2px solid var(--primary);
+  border-left: 2px solid var(--purple);
 }
 
 .person-right {
@@ -1207,81 +1198,57 @@ button { font-family: var(--font-body); }
   font-weight: 700;
   color: white;
 }
+.person-score::after { content: '/10'; font-size: 0.48rem; opacity: 0.7; font-weight: 400; margin-left: 1px; }
 
-.person-score::after {
-  content: '/10';
-  font-size: 0.5rem;
-  opacity: 0.7;
-  font-weight: 400;
-  margin-left: 1px;
-}
-
-.score-high { background: linear-gradient(135deg, #16A34A, #15803D); }
+.score-high { background: linear-gradient(135deg, #22C55E, #16A34A); }
 .score-mid  { background: linear-gradient(135deg, #EAB308, #CA8A04); }
-.score-low  { background: linear-gradient(135deg, #94A3B8, #64748B); }
+.score-low  { background: linear-gradient(135deg, #6B6580, #4A4560); }
 
-.person-actions {
-  display: flex;
-  gap: 0.4rem;
-}
+.person-actions { display: flex; gap: 0.4rem; }
 
 .action-btn {
   font-family: var(--font-body);
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   font-weight: 500;
-  padding: 0.3rem 0.65rem;
+  padding: 0.28rem 0.6rem;
   border-radius: var(--radius-xs);
   border: 1px solid var(--border);
-  background: var(--bg-white);
-  color: var(--text-secondary);
+  background: transparent;
+  color: var(--text-tertiary);
   cursor: pointer;
   transition: all var(--transition);
   display: inline-flex;
   align-items: center;
-  gap: 0.25rem;
+  gap: 0.2rem;
   text-decoration: none;
 }
 
-.action-btn:hover {
-  border-color: var(--primary);
-  color: var(--primary);
-  background: var(--primary-light);
-}
+.action-btn:hover { border-color: var(--purple); color: var(--purple-light); }
 
 .action-btn.reveal {
-  background: var(--primary);
-  border-color: var(--primary);
+  background: var(--purple);
+  border-color: var(--purple);
   color: white;
 }
+.action-btn.reveal:hover { background: var(--purple-light); }
 
-.action-btn.reveal:hover { background: var(--primary-dark); }
-
-/* ── Empty State ── */
+/* Empty State */
 .empty-state {
   text-align: center;
   padding: 4rem 2rem;
-  color: var(--text-tertiary);
+  color: var(--text-muted);
   animation: fadeUp 0.5s ease both;
 }
-
-.empty-icon { font-size: 2.5rem; margin-bottom: 0.75rem; opacity: 0.5; }
-
-.empty-text {
-  font-family: var(--font-heading);
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: var(--text-secondary);
-  margin-bottom: 0.35rem;
-}
-
+.empty-icon { font-size: 2.5rem; margin-bottom: 0.75rem; opacity: 0.3; }
+.empty-text { font-family: var(--font-heading); font-size: 1.1rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 0.35rem; }
 .empty-hint { font-size: 0.85rem; }
 
-/* ── Enrich Modal ── */
+/* ── Modal ── */
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(30,41,59,0.4);
-  backdrop-filter: blur(8px);
+  background: rgba(8,6,15,0.7);
+  backdrop-filter: blur(12px);
   z-index: 300;
   display: flex;
   align-items: center;
@@ -1291,22 +1258,20 @@ button { font-family: var(--font-body); }
   pointer-events: none;
   transition: opacity 0.3s ease;
 }
-
 .modal-overlay.visible { opacity: 1; pointer-events: auto; }
 
 .modal {
-  background: var(--bg-white);
-  border-radius: 16px;
-  box-shadow: var(--shadow-xl);
+  background: var(--bg-card);
+  border-radius: 18px;
+  box-shadow: var(--shadow-lg), var(--shadow-glow);
   max-width: 560px;
   width: 100%;
   max-height: 85vh;
   overflow-y: auto;
   transform: translateY(12px) scale(0.97);
   transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-strong);
 }
-
 .modal-overlay.visible .modal { transform: translateY(0) scale(1); }
 
 .modal-header {
@@ -1327,84 +1292,30 @@ button { font-family: var(--font-body); }
   align-items: center;
   justify-content: center;
   font-size: 1.1rem;
-  color: var(--text-secondary);
+  color: var(--text-tertiary);
   transition: all var(--transition);
   flex-shrink: 0;
 }
-
-.modal-close:hover { border-color: var(--border-strong); color: var(--text); }
+.modal-close:hover { border-color: var(--purple); color: var(--text); }
 
 .modal-body { padding: 1rem 1.5rem 1.5rem; }
 
-.modal-name {
-  font-family: var(--font-heading);
-  font-size: 1.5rem;
-  font-weight: 700;
-  letter-spacing: -0.02em;
-}
-
-.modal-title-co {
-  font-size: 0.95rem;
-  color: var(--text-secondary);
-  margin-top: 0.2rem;
-}
-
+.modal-name { font-family: var(--font-heading); font-size: 1.5rem; font-weight: 700; letter-spacing: -0.02em; }
+.modal-title-co { font-size: 0.92rem; color: var(--text-secondary); margin-top: 0.2rem; }
 .modal-section { margin-top: 1.25rem; }
-
-.modal-section-label {
-  font-size: 0.7rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--text-tertiary);
-  margin-bottom: 0.5rem;
-}
-
-.modal-exp-item {
-  padding: 0.5rem 0;
-  border-bottom: 1px solid var(--border);
-  font-size: 0.88rem;
-}
-
+.modal-section-label { font-size: 0.68rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); margin-bottom: 0.5rem; }
+.modal-exp-item { padding: 0.5rem 0; border-bottom: 1px solid var(--border); font-size: 0.88rem; }
 .modal-exp-item:last-child { border: none; }
 .modal-exp-role { font-weight: 600; color: var(--text); }
 .modal-exp-co { color: var(--text-secondary); }
-.modal-exp-dates { font-size: 0.75rem; color: var(--text-tertiary); font-family: var(--font-mono); }
-
+.modal-exp-dates { font-size: 0.72rem; color: var(--text-muted); font-family: var(--font-mono); }
 .modal-skills { display: flex; flex-wrap: wrap; gap: 0.35rem; }
-.modal-skill {
-  font-size: 0.75rem;
-  padding: 0.25rem 0.6rem;
-  border-radius: 100px;
-  background: var(--primary-light);
-  color: var(--primary);
-}
-
+.modal-skill { font-size: 0.72rem; padding: 0.22rem 0.55rem; border-radius: 100px; background: var(--purple-subtle); color: var(--purple-light); border: 1px solid var(--border); }
 .modal-links { display: flex; flex-direction: column; gap: 0.35rem; }
-.modal-link {
-  font-size: 0.82rem;
-  color: var(--primary);
-  font-family: var(--font-mono);
-  transition: opacity var(--transition);
-}
+.modal-link { font-size: 0.82rem; color: var(--purple-light); font-family: var(--font-mono); transition: opacity var(--transition); }
 .modal-link:hover { opacity: 0.7; }
-
-.modal-loading {
-  text-align: center;
-  padding: 3rem 1.5rem;
-  color: var(--text-tertiary);
-  font-size: 0.88rem;
-}
-
-.modal-loading .spinner {
-  width: 24px;
-  height: 24px;
-  border: 2px solid var(--border);
-  border-top-color: var(--primary);
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-  margin: 0 auto 0.75rem;
-}
+.modal-loading { text-align: center; padding: 3rem 1.5rem; color: var(--text-muted); font-size: 0.88rem; }
+.modal-loading .spinner { width: 24px; height: 24px; border: 2px solid var(--border); border-top-color: var(--purple); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 0.75rem; }
 
 @keyframes spin { to { transform: rotate(360deg); } }
 @keyframes fadeUp {
@@ -1412,49 +1323,9 @@ button { font-family: var(--font-body); }
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* ── History & Favorites (Sidebar Panels) ── */
-.sidebar-panel {
-  padding: 0.5rem 0.75rem;
-}
-
-.sidebar-panel-item {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.45rem 0.65rem;
-  border-radius: var(--radius-xs);
-  font-size: 0.8rem;
-  color: var(--text-secondary);
-  cursor: pointer;
-  transition: all var(--transition);
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-}
-
-.sidebar-panel-item:hover {
-  background: var(--bg-elevated);
-  color: var(--text);
-}
-
-.sidebar-panel-item svg {
-  width: 14px;
-  height: 14px;
-  flex-shrink: 0;
-  opacity: 0.5;
-}
-
-.sidebar-empty {
-  padding: 0.75rem 0.65rem;
-  font-size: 0.78rem;
-  color: var(--text-tertiary);
-  font-style: italic;
-}
-
-/* ═══════════════════════════════════════════════
+/* ═══════════════════════════════════════
    RESPONSIVE
-   ═══════════════════════════════════════════════ */
-
+   ═══════════════════════════════════════ */
 @media (max-width: 768px) {
   .app-sidebar { transform: translateX(-100%); }
   .app-sidebar.open { transform: translateX(0); }
@@ -1462,7 +1333,6 @@ button { font-family: var(--font-body); }
   .mobile-toggle { display: flex; }
   .app-main { margin-left: 0; }
   .app-topbar { padding-left: 3.5rem; }
-
   .nav-links { display: none; }
   .hero-title { font-size: 2.2rem; }
   .hero-cta-row { flex-direction: column; }
@@ -1474,30 +1344,43 @@ button { font-family: var(--font-body); }
 
 @media (max-width: 480px) {
   .top-nav { padding: 0 1rem; }
-  .hero-section { padding: 2.5rem 1rem 2rem; }
-  .landing-search-box { border-radius: 12px; }
+  .hero-section { padding: 3rem 1rem 2rem; }
   .search-area { padding: 1.5rem 1rem 1rem; }
   .results-container { padding: 0 1rem 3rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 </style>
 </head>
 <body>
+
+<!-- Mesh background -->
+<div class="mesh-bg"></div>
+<div class="mesh-grid"></div>
 
 <!-- ═══════════════════════════════════════
      PAGE 1: LANDING
      ═══════════════════════════════════════ -->
 <div class="landing" id="landingPage">
 
-  <!-- Top Nav -->
   <nav class="top-nav">
     <div class="top-nav-inner">
       <div class="nav-brand" onclick="showLanding()">
-        <div class="nav-brand-icon">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round">
-            <path d="M2 12c2-3 5-5 10-5s8 2 10 5"/>
-            <path d="M2 17c2-3 5-5 10-5s8 2 10 5"/>
+        <span class="bat-logo">
+          <svg viewBox="0 0 52 32" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M2 18 C4 10, 10 4, 18 7 C16 12, 17 17, 20 19"/>
+            <path d="M50 18 C48 10, 42 4, 34 7 C36 12, 35 17, 32 19"/>
+            <ellipse cx="26" cy="17" rx="7" ry="8"/>
+            <path d="M21 12 L19 5 L23 11"/>
+            <path d="M31 12 L33 5 L29 11"/>
+            <path d="M23 16 Q24 14 26 16 Q28 14 29 16 L26 20 Z"/>
           </svg>
-        </div>
+        </span>
         <span class="nav-brand-text">WaveHeart</span>
       </div>
 
@@ -1514,44 +1397,39 @@ button { font-family: var(--font-body); }
     </div>
   </nav>
 
-  <!-- Hero -->
   <section class="hero-section">
     <div class="hero-badge">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
       AI-Powered People Intelligence
     </div>
 
-    <h1 class="hero-title">Find the right people,<br><em>effortlessly.</em></h1>
+    <h1 class="hero-title"><span class="purple-word">Searching</span> for a <span class="green-word">soulmate</span></h1>
 
-    <p class="hero-subtitle">
-      Describe who you're looking for in natural language. AI understands your intent, searches 1.5B+ profiles, and scores every result by relevance.
-    </p>
+    <p class="hero-subtitle">Here, we can rapidly match even your most complex requirements. AI understands your intent, searches 1.5B+ profiles, and scores every result.</p>
 
     <div class="hero-cta-row">
       <button class="btn btn-primary btn-lg" onclick="showApp()">Start Searching</button>
       <button class="btn btn-ghost btn-lg" id="landingDemoBtn" onclick="showApp(); setTimeout(runDemo, 400)">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polygon points="5 3 19 12 5 21"/></svg>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21"/></svg>
         Watch Demo
       </button>
     </div>
 
-    <!-- Search bar on landing too -->
     <div class="landing-search">
       <div class="landing-search-box">
         <input class="landing-search-input" id="landingSearchInput"
-          placeholder="Try: Senior ML engineers in Silicon Valley for recruiting..."
+          placeholder="Hi, please enter your thoughts here."
           autocomplete="off">
         <button class="landing-search-btn" onclick="landingDoSearch()">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="11" cy="11" r="8"/>
-            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <line x1="5" y1="12" x2="19" y2="12"/>
+            <polyline points="12 5 19 12 12 19"/>
           </svg>
         </button>
       </div>
     </div>
   </section>
 
-  <!-- Trust Section -->
   <div class="trust-section">
     <div class="trust-label">Powered by leading data providers</div>
     <div class="trust-logos">
@@ -1559,16 +1437,13 @@ button { font-family: var(--font-body); }
       <span class="trust-logo">Apollo</span>
       <span class="trust-logo">LinkedIn</span>
       <span class="trust-logo">Clearbit</span>
-      <span class="trust-logo">ZoomInfo</span>
     </div>
   </div>
 
-  <!-- Features -->
   <section class="features-section">
     <div class="features-inner">
       <h2 class="features-title">How it works</h2>
       <p class="features-sub">Three steps from natural language to qualified leads</p>
-
       <div class="features-grid">
         <div class="feature-card">
           <div class="feature-icon">
@@ -1577,7 +1452,6 @@ button { font-family: var(--font-body); }
           <div class="feature-name">Natural Language Search</div>
           <div class="feature-desc">Just describe who you need. Our AI parses your intent and builds precise database queries automatically.</div>
         </div>
-
         <div class="feature-card">
           <div class="feature-icon">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
@@ -1585,82 +1459,74 @@ button { font-family: var(--font-body); }
           <div class="feature-name">Smart Intent Discovery</div>
           <div class="feature-desc">If your query is vague, AI asks smart follow-up questions to narrow down exactly who you're looking for.</div>
         </div>
-
         <div class="feature-card">
           <div class="feature-icon">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
           </div>
-          <div class="feature-name">Scored & Summarized</div>
+          <div class="feature-name">Scored &amp; Summarized</div>
           <div class="feature-desc">Results are scored 1-10 for relevance with AI-generated summaries explaining why each person matches.</div>
         </div>
       </div>
     </div>
   </section>
 
-  <footer class="landing-footer">
-    WaveHeart &copy; 2026. Built with AI for smarter people discovery.
-  </footer>
+  <footer class="landing-footer">WaveHeart &copy; 2026. Built with AI for smarter people discovery.</footer>
 </div>
 
 <!-- ═══════════════════════════════════════
-     PAGE 2: APP (Search Dashboard)
+     PAGE 2: APP
      ═══════════════════════════════════════ -->
 <div class="app-page" id="appPage">
 
-  <!-- Mobile toggle -->
   <button class="mobile-toggle" id="mobileToggle" aria-label="Menu">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-      <line x1="4" y1="7" x2="20" y2="7"/>
-      <line x1="4" y1="12" x2="20" y2="12"/>
-      <line x1="4" y1="17" x2="20" y2="17"/>
+      <line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/>
     </svg>
   </button>
   <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
-  <!-- Sidebar -->
   <aside class="app-sidebar" id="appSidebar">
     <div class="sidebar-header">
-      <div class="sidebar-brand" onclick="showLanding()">
-        <div class="sidebar-brand-icon"></div>
-        <span class="sidebar-brand-name">WaveHeart</span>
-      </div>
-      <button class="sidebar-back-btn" onclick="showLanding()" title="Back to home">
+      <span class="bat-logo">
+        <svg viewBox="0 0 52 32" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M2 18 C4 10, 10 4, 18 7 C16 12, 17 17, 20 19"/>
+          <path d="M50 18 C48 10, 42 4, 34 7 C36 12, 35 17, 32 19"/>
+          <ellipse cx="26" cy="17" rx="7" ry="8"/>
+          <path d="M21 12 L19 5 L23 11"/>
+          <path d="M31 12 L33 5 L29 11"/>
+          <path d="M23 16 Q24 14 26 16 Q28 14 29 16 L26 20 Z"/>
+        </svg>
+      </span>
+      <span class="sidebar-brand-name">WaveHeart</span>
+      <button class="sidebar-collapse-btn" onclick="showLanding()" title="Back to home">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
       </button>
     </div>
 
-    <!-- Account -->
-    <div class="sidebar-account">
-      <div class="account-avatar">U</div>
-      <div class="account-info">
-        <div class="account-name">Demo User</div>
-        <div class="account-plan"><span class="plan-dot"></span> Free Plan</div>
-      </div>
-    </div>
-
-    <!-- Nav -->
     <nav class="sidebar-nav">
-      <button class="sidebar-item active" data-nav="search" onclick="navTo('search')">
+      <button class="sidebar-item active" data-nav="ai" onclick="navTo('ai')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2a7 7 0 0 1 7 7c0 3-1.5 5-3 6.5V18a2 2 0 0 1-2 2h-4a2 2 0 0 1-2-2v-2.5C6.5 14 5 12 5 9a7 7 0 0 1 7-7z"/>
+          <line x1="9" y1="22" x2="15" y2="22"/>
+        </svg>
+        AI 助手
+      </button>
+
+      <button class="sidebar-item" data-nav="results" onclick="navTo('results')">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-        Search
+        搜索结果
       </button>
 
-      <button class="sidebar-item" data-nav="history" onclick="navTo('history')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-        History
-        <span class="sidebar-item-badge" id="historyCount">0</span>
-      </button>
-
-      <button class="sidebar-item" data-nav="favorites" onclick="navTo('favorites')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-        Favorites
+      <button class="sidebar-item" data-nav="talent" onclick="navTo('talent')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
+        人才库
         <span class="sidebar-item-badge" id="favCount">0</span>
       </button>
 
       <div class="sidebar-section-label">Scenarios</div>
 
       <button class="sidebar-item" onclick="pickScenario('recruiting')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
         Recruiting
       </button>
 
@@ -1679,61 +1545,47 @@ button { font-family: var(--font-body); }
         Sales
       </button>
 
-      <!-- History Panel -->
       <div class="sidebar-section-label">Recent Searches</div>
       <div class="sidebar-panel" id="historyPanel">
         <div class="sidebar-empty">No search history yet</div>
       </div>
 
-      <!-- Favorites Panel -->
       <div class="sidebar-section-label">Saved People</div>
       <div class="sidebar-panel" id="favoritesPanel">
         <div class="sidebar-empty">No favorites yet</div>
       </div>
     </nav>
 
-    <div class="sidebar-footer">
-      <div class="sidebar-footer-text">Powered by PDL &middot; 1.5B+ profiles</div>
+    <div class="sidebar-account">
+      <div class="account-avatar">W</div>
+      <div class="account-info">
+        <div class="account-name">WaveHeart</div>
+        <div class="account-email">WaveHeart@gmail.com</div>
+      </div>
+      <button class="account-settings-btn" title="Settings">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      </button>
     </div>
   </aside>
 
-  <!-- Main -->
   <div class="app-main">
     <header class="app-topbar">
-      <div class="topbar-left">
-        <div class="topbar-breadcrumb">
-          WaveHeart <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-          <span id="topbarTitle">Search</span>
-        </div>
-      </div>
       <div class="topbar-right">
-        <button class="btn btn-ghost" id="demoBtn" onclick="runDemo()" style="font-size:0.78rem;padding:0.3rem 0.75rem">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polygon points="5 3 19 12 5 21"/></svg>
+        <button class="btn btn-ghost" id="demoBtn" onclick="runDemo()" style="font-size:0.75rem;padding:0.25rem 0.7rem">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21"/></svg>
           Demo
         </button>
-        <span style="font-size:0.78rem;color:var(--text-tertiary);font-family:var(--font-mono)" id="headerMeta">PDL Search</span>
+        <span style="font-size:0.72rem;color:var(--text-muted);font-family:var(--font-mono)" id="headerMeta">PDL Search</span>
       </div>
     </header>
 
-    <!-- Search Section -->
     <div class="search-area" id="searchArea">
-      <div class="search-header">
-        <h2 class="search-title" id="searchPageTitle">Search People</h2>
-      </div>
+      <h2 class="search-hero-title"><span class="purple-word">Searching</span> for a <span class="green-word">soulmate</span></h2>
+      <p class="search-hero-sub">Here, we can rapidly match even your most complex requirements</p>
 
-      <!-- Scenario Chips -->
-      <div class="app-scenarios" id="appScenarios">
-        <button class="scenario-chip active" data-scenario="auto">Auto</button>
-        <button class="scenario-chip" data-scenario="recruiting">Recruiting</button>
-        <button class="scenario-chip" data-scenario="marketing">Marketing</button>
-        <button class="scenario-chip" data-scenario="kol">KOL</button>
-        <button class="scenario-chip" data-scenario="sales">Sales</button>
-      </div>
-
-      <!-- Search Input -->
       <div class="app-search-box" id="appSearchBox">
         <textarea class="app-search-input" id="searchInput"
-          placeholder="Describe who you want to find..."
+          placeholder="Hi, please enter your thoughts here."
           rows="1"></textarea>
         <button class="app-search-btn" id="searchBtn" title="Search">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -1744,10 +1596,8 @@ button { font-family: var(--font-body); }
         <div class="search-loading-bar" id="searchLoading"></div>
       </div>
 
-      <!-- Chat Thread (for follow-up questions) -->
       <div id="chatThread"></div>
 
-      <!-- Example Cards -->
       <div class="app-examples" id="examples">
         <div class="app-example" data-query="帮我找硅谷会 Python 和机器学习的高级工程师">
           <div class="app-example-label">Recruiting</div>
@@ -1768,12 +1618,11 @@ button { font-family: var(--font-body); }
       </div>
     </div>
 
-    <!-- Results -->
     <div class="results-container" id="resultsArea"></div>
   </div>
 </div>
 
-<!-- Enrich Modal -->
+<!-- Modal -->
 <div class="modal-overlay" id="modalOverlay">
   <div class="modal" id="modal">
     <div class="modal-header">
@@ -1798,15 +1647,10 @@ const state = {
   sessionId: '',
   searchHistory: JSON.parse(localStorage.getItem('wh_history') || '[]'),
   favorites: JSON.parse(localStorage.getItem('wh_favorites') || '[]'),
-  page: 'landing', // 'landing' or 'app'
+  page: 'landing',
 };
 
-const SCENARIO_LABELS = {
-  recruiting: 'Recruiting',
-  marketing: 'Marketing',
-  kol: 'KOL',
-  sales: 'Sales',
-};
+const SCENARIO_LABELS = { recruiting: 'Recruiting', marketing: 'Marketing', kol: 'KOL', sales: 'Sales' };
 
 // ═══════════════════════════════════════
 // DOM REFS
@@ -1819,7 +1663,6 @@ const searchLoading = document.getElementById('searchLoading');
 const resultsArea = document.getElementById('resultsArea');
 const chatThread = document.getElementById('chatThread');
 const headerMeta = document.getElementById('headerMeta');
-const topbarTitle = document.getElementById('topbarTitle');
 const examples = document.getElementById('examples');
 const searchArea = document.getElementById('searchArea');
 const modalOverlay = document.getElementById('modalOverlay');
@@ -1838,20 +1681,17 @@ function showLanding() {
   state.page = 'landing';
   landingPage.style.display = '';
   appPage.classList.remove('active');
-  document.body.style.background = 'var(--bg)';
 }
 
 function showApp() {
   state.page = 'app';
   landingPage.style.display = 'none';
   appPage.classList.add('active');
-  document.body.style.background = 'var(--bg)';
   setTimeout(() => searchInput.focus(), 100);
   updateHistoryPanel();
   updateFavoritesPanel();
 }
 
-// Landing search → switch to app and search
 function landingDoSearch() {
   const q = document.getElementById('landingSearchInput').value.trim();
   if (!q) return;
@@ -1872,7 +1712,6 @@ function navTo(page) {
   document.querySelectorAll('.sidebar-item[data-nav]').forEach(n => {
     n.classList.toggle('active', n.dataset.nav === page);
   });
-  topbarTitle.textContent = page === 'search' ? 'Search' : page === 'history' ? 'Search History' : 'Favorites';
   closeMobileSidebar();
 }
 
@@ -1880,7 +1719,6 @@ mobileToggle.addEventListener('click', () => {
   appSidebar.classList.toggle('open');
   sidebarOverlay.classList.toggle('visible');
 });
-
 sidebarOverlay.addEventListener('click', closeMobileSidebar);
 
 function closeMobileSidebar() {
@@ -1890,22 +1728,8 @@ function closeMobileSidebar() {
   }
 }
 
-// ═══════════════════════════════════════
-// SCENARIOS
-// ═══════════════════════════════════════
-document.getElementById('appScenarios').addEventListener('click', (e) => {
-  const chip = e.target.closest('.scenario-chip');
-  if (!chip) return;
-  document.querySelectorAll('.scenario-chip').forEach(c => c.classList.remove('active'));
-  chip.classList.add('active');
-  state.scenario = chip.dataset.scenario;
-});
-
 function pickScenario(scenario) {
   state.scenario = scenario;
-  document.querySelectorAll('.scenario-chip').forEach(c => {
-    c.classList.toggle('active', c.dataset.scenario === scenario);
-  });
   closeMobileSidebar();
   searchInput.focus();
 }
@@ -1923,7 +1747,6 @@ searchInput.addEventListener('keydown', (e) => {
   if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); doSearch(); }
 });
 
-// Example cards
 examples.addEventListener('click', (e) => {
   const card = e.target.closest('.app-example');
   if (!card) return;
@@ -1940,11 +1763,7 @@ async function doSearch() {
   searchBtn.disabled = true;
   searchLoading.classList.add('active');
   resultsArea.innerHTML = '';
-
-  // Hide examples when searching
-  if (!state.sessionId) {
-    examples.style.display = 'none';
-  }
+  if (!state.sessionId) examples.style.display = 'none';
 
   try {
     const resp = await fetch('/api/chat', {
@@ -1952,13 +1771,10 @@ async function doSearch() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ message: query, session_id: state.sessionId }),
     });
-
     if (!resp.ok) throw new Error(`Server error: ${resp.status}`);
     const data = await resp.json();
-
     if (data.session_id) state.sessionId = data.session_id;
 
-    // Follow-up question
     if (data.type === 'question') {
       appendChatBubble('user', query);
       appendChatBubble('ai', data.question);
@@ -1968,41 +1784,19 @@ async function doSearch() {
       return;
     }
 
-    // Search results
     state.results = data;
     examples.style.display = 'none';
-
-    const detectedScenario = data.scenario || 'recruiting';
-    document.querySelectorAll('.scenario-chip').forEach(c => {
-      c.classList.toggle('active',
-        state.scenario === 'auto'
-          ? c.dataset.scenario === detectedScenario || c.dataset.scenario === 'auto'
-          : c.dataset.scenario === state.scenario
-      );
-    });
-
-    headerMeta.textContent = `${SCENARIO_LABELS[detectedScenario] || detectedScenario} · ${(data.total || 0).toLocaleString()} matches`;
-
-    // Save to history
-    addToHistory(query, data.scenario || 'auto', (data.people || []).length);
+    const sc = data.scenario || 'recruiting';
+    headerMeta.textContent = `${SCENARIO_LABELS[sc] || sc} · ${(data.total || 0).toLocaleString()} matches`;
+    addToHistory(query, sc, (data.people || []).length);
 
     if (data.error) {
-      resultsArea.innerHTML = `
-        <div class="empty-state">
-          <div class="empty-icon"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg></div>
-          <div class="empty-text">API Error</div>
-          <div class="empty-hint">${escHtml(data.error)}</div>
-        </div>`;
+      resultsArea.innerHTML = `<div class="empty-state"><div class="empty-text">API Error</div><div class="empty-hint">${escHtml(data.error)}</div></div>`;
     } else {
       renderResults(data);
     }
   } catch (err) {
-    resultsArea.innerHTML = `
-      <div class="empty-state">
-        <div class="empty-icon"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg></div>
-        <div class="empty-text">Search failed</div>
-        <div class="empty-hint">${escHtml(err.message)}</div>
-      </div>`;
+    resultsArea.innerHTML = `<div class="empty-state"><div class="empty-text">Search failed</div><div class="empty-hint">${escHtml(err.message)}</div></div>`;
   } finally {
     state.loading = false;
     searchBtn.disabled = false;
@@ -2022,46 +1816,28 @@ function renderResults(data) {
     <span class="results-scenario-tag">${SCENARIO_LABELS[data.scenario] || data.scenario}</span>
   </div>`;
 
-  if (data.sql) {
-    html += `<div class="results-sql" title="Click to copy" onclick="navigator.clipboard.writeText(this.textContent)">${escHtml(data.sql)}</div>`;
-  }
-
-  if (data.summary) {
-    html += `<div class="results-summary">${escHtml(data.summary)}</div>`;
-  }
+  if (data.sql) html += `<div class="results-sql" title="Click to copy" onclick="navigator.clipboard.writeText(this.textContent)">${escHtml(data.sql)}</div>`;
+  if (data.summary) html += `<div class="results-summary">${escHtml(data.summary)}</div>`;
 
   if (data.relaxed && data.relax_info) {
-    html += `<div class="suggestion-box">
-      <div class="suggestion-title">Auto-broadened search</div>
-      <p style="font-size:0.85rem;color:var(--text-secondary)">${escHtml(data.relax_info.explanation || '')}</p>
-    </div>`;
+    html += `<div class="suggestion-box"><div class="suggestion-title">Auto-broadened search</div><p style="font-size:0.85rem;color:var(--text-secondary)">${escHtml(data.relax_info.explanation || '')}</p></div>`;
   }
 
   if (data.narrowing) {
-    const suggestions = data.narrowing.suggestions || [];
-    html += `<div class="suggestion-box">
-      <div class="suggestion-title">Narrow your search</div>
-      <ul class="suggestion-list">
-        ${suggestions.map(s => `<li class="suggestion-item" onclick="appendQuery(this.textContent)">${escHtml(s)}</li>`).join('')}
-      </ul>
-    </div>`;
+    const sug = data.narrowing.suggestions || [];
+    html += `<div class="suggestion-box"><div class="suggestion-title">Narrow your search</div>
+      <ul class="suggestion-list">${sug.map(s => `<li class="suggestion-item" onclick="appendQuery(this.textContent)">${escHtml(s)}</li>`).join('')}</ul></div>`;
   }
 
   if (people.length === 0) {
-    html += `<div class="empty-state">
-      <div class="empty-icon"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div>
-      <div class="empty-text">No results found</div>
-      <div class="empty-hint">Try broadening your search criteria</div>
-    </div>`;
+    html += `<div class="empty-state"><div class="empty-text">No results found</div><div class="empty-hint">Try broadening your search criteria</div></div>`;
   } else {
     people.forEach((p, i) => {
       const initials = getInitials(p.name);
       const avatarBg = getAvatarColor(p.name);
       const score = p.score || 0;
       const scoreClass = score >= 7 ? 'score-high' : score >= 5 ? 'score-mid' : 'score-low';
-      const linkedinFull = p.linkedin_url
-        ? (p.linkedin_url.startsWith('http') ? p.linkedin_url : 'https://' + p.linkedin_url)
-        : '';
+      const linkedinFull = p.linkedin_url ? (p.linkedin_url.startsWith('http') ? p.linkedin_url : 'https://' + p.linkedin_url) : '';
       const isFav = state.favorites.some(f => f.name === p.name && f.company === p.company);
 
       html += `
@@ -2082,15 +1858,14 @@ function renderResults(data) {
             <div class="person-actions">
               ${linkedinFull ? `<a href="${linkedinFull}" target="_blank" rel="noopener" class="action-btn" onclick="event.stopPropagation()">LinkedIn</a>` : ''}
               ${linkedinFull ? `<button class="action-btn reveal" onclick="event.stopPropagation();enrichPerson('${escAttr(linkedinFull)}','${escAttr(p.name)}','${escAttr(p.company)}')">Reveal</button>` : ''}
-              <button class="action-btn" onclick="event.stopPropagation();toggleFavorite(${JSON.stringify(p).replace(/"/g, '&quot;')})" title="${isFav ? 'Remove from favorites' : 'Add to favorites'}">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="${isFav ? 'var(--cta)' : 'none'}" stroke="${isFav ? 'var(--cta)' : 'currentColor'}" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+              <button class="action-btn" onclick="event.stopPropagation();toggleFavorite(${JSON.stringify(p).replace(/"/g, '&quot;')})" title="${isFav ? 'Remove' : 'Save'}">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="${isFav ? 'var(--purple-light)' : 'none'}" stroke="${isFav ? 'var(--purple-light)' : 'currentColor'}" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
               </button>
             </div>
           </div>
         </div>`;
     });
   }
-
   resultsArea.innerHTML = html;
 }
 
@@ -2099,11 +1874,7 @@ function renderResults(data) {
 // ═══════════════════════════════════════
 function appendChatBubble(role, text) {
   let thread = chatThread.querySelector('.chat-thread');
-  if (!thread) {
-    thread = document.createElement('div');
-    thread.className = 'chat-thread';
-    chatThread.appendChild(thread);
-  }
+  if (!thread) { thread = document.createElement('div'); thread.className = 'chat-thread'; chatThread.appendChild(thread); }
   const bubble = document.createElement('div');
   bubble.className = `chat-bubble ${role}`;
   bubble.textContent = text;
@@ -2111,16 +1882,13 @@ function appendChatBubble(role, text) {
   examples.style.display = 'none';
 }
 
-function clearChatBubbles() {
-  chatThread.innerHTML = '';
-}
+function clearChatBubbles() { chatThread.innerHTML = ''; }
 
 // ═══════════════════════════════════════
 // HISTORY & FAVORITES
 // ═══════════════════════════════════════
-function addToHistory(query, scenario, resultCount) {
-  const entry = { query, scenario, resultCount, time: Date.now() };
-  state.searchHistory.unshift(entry);
+function addToHistory(query, scenario, cnt) {
+  state.searchHistory.unshift({ query, scenario, cnt, time: Date.now() });
   if (state.searchHistory.length > 20) state.searchHistory = state.searchHistory.slice(0, 20);
   localStorage.setItem('wh_history', JSON.stringify(state.searchHistory));
   updateHistoryPanel();
@@ -2128,39 +1896,22 @@ function addToHistory(query, scenario, resultCount) {
 
 function updateHistoryPanel() {
   const panel = document.getElementById('historyPanel');
-  const badge = document.getElementById('historyCount');
-  badge.textContent = state.searchHistory.length;
-
-  if (state.searchHistory.length === 0) {
-    panel.innerHTML = '<div class="sidebar-empty">No search history yet</div>';
-    return;
-  }
-
-  panel.innerHTML = state.searchHistory.slice(0, 8).map((h, i) => `
+  if (state.searchHistory.length === 0) { panel.innerHTML = '<div class="sidebar-empty">No search history yet</div>'; return; }
+  panel.innerHTML = state.searchHistory.slice(0, 6).map(h => `
     <div class="sidebar-panel-item" onclick="rerunSearch('${escAttr(h.query)}')" title="${escHtml(h.query)}">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-      ${escHtml(h.query.length > 28 ? h.query.slice(0, 28) + '...' : h.query)}
+      ${escHtml(h.query.length > 26 ? h.query.slice(0, 26) + '...' : h.query)}
     </div>
   `).join('');
 }
 
-function rerunSearch(query) {
-  searchInput.value = query;
-  searchInput.dispatchEvent(new Event('input'));
-  navTo('search');
-  doSearch();
-}
+function rerunSearch(q) { searchInput.value = q; searchInput.dispatchEvent(new Event('input')); navTo('ai'); doSearch(); }
 
 function toggleFavorite(person) {
   const idx = state.favorites.findIndex(f => f.name === person.name && f.company === person.company);
-  if (idx >= 0) {
-    state.favorites.splice(idx, 1);
-  } else {
-    state.favorites.unshift(person);
-  }
+  if (idx >= 0) state.favorites.splice(idx, 1); else state.favorites.unshift(person);
   localStorage.setItem('wh_favorites', JSON.stringify(state.favorites));
   updateFavoritesPanel();
-  // Re-render results to update heart icons
   if (state.results) renderResults(state.results);
 }
 
@@ -2168,28 +1919,20 @@ function updateFavoritesPanel() {
   const panel = document.getElementById('favoritesPanel');
   const badge = document.getElementById('favCount');
   badge.textContent = state.favorites.length;
-
-  if (state.favorites.length === 0) {
-    panel.innerHTML = '<div class="sidebar-empty">No favorites yet</div>';
-    return;
-  }
-
-  panel.innerHTML = state.favorites.slice(0, 8).map(f => `
+  if (state.favorites.length === 0) { panel.innerHTML = '<div class="sidebar-empty">No favorites yet</div>'; return; }
+  panel.innerHTML = state.favorites.slice(0, 6).map(f => `
     <div class="sidebar-panel-item" title="${escHtml(f.name)} @ ${escHtml(f.company || '')}">
-      <svg viewBox="0 0 24 24" fill="var(--cta)" stroke="var(--cta)" stroke-width="2" style="width:14px;height:14px"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+      <svg viewBox="0 0 24 24" fill="var(--purple-light)" stroke="var(--purple-light)" stroke-width="2" style="width:13px;height:13px"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
       ${escHtml(f.name || 'Unknown')}
     </div>
   `).join('');
 }
 
 // ═══════════════════════════════════════
-// GO HOME (reset)
+// GO HOME
 // ═══════════════════════════════════════
 function goHome() {
-  if (state.sessionId) {
-    fetch(`/api/chat/${state.sessionId}`, { method: 'DELETE' }).catch(() => {});
-    state.sessionId = '';
-  }
+  if (state.sessionId) { fetch(`/api/chat/${state.sessionId}`, { method: 'DELETE' }).catch(() => {}); state.sessionId = ''; }
   resultsArea.innerHTML = '';
   searchInput.value = '';
   searchInput.style.height = 'auto';
@@ -2198,228 +1941,111 @@ function goHome() {
   clearChatBubbles();
   examples.style.display = '';
   state.scenario = 'auto';
-  document.querySelectorAll('.scenario-chip').forEach(c => {
-    c.classList.toggle('active', c.dataset.scenario === 'auto');
-  });
-  navTo('search');
+  navTo('ai');
   searchInput.focus();
 }
 
 // ═══════════════════════════════════════
-// ENRICH (Modal)
+// ENRICH
 // ═══════════════════════════════════════
-async function enrichPerson(linkedinUrl, name, company) {
+async function enrichPerson(url, name, company) {
   modalOverlay.classList.add('visible');
   modalName.textContent = name || 'Loading...';
   modalTitleCo.textContent = '';
   modalBody.innerHTML = `<div class="modal-loading"><div class="spinner"></div>Fetching full profile...</div>`;
-
   try {
-    const resp = await fetch('/api/enrich', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ linkedin_url: linkedinUrl, name, company }),
-    });
-
+    const resp = await fetch('/api/enrich', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ linkedin_url: url, name, company }) });
     if (!resp.ok) throw new Error('Enrich failed');
-    const data = await resp.json();
-
-    modalName.textContent = data.name || name;
-    modalTitleCo.textContent = `${data.title || ''} @ ${data.company || ''}`;
-
-    let bodyHtml = '';
-
-    if (data.location) {
-      bodyHtml += `<div class="modal-section">
-        <div class="modal-section-label">Location</div>
-        <div style="font-size:0.9rem">${escHtml(data.location)}</div>
-      </div>`;
-    }
-
-    if (data.experience && data.experience.length) {
-      bodyHtml += `<div class="modal-section">
-        <div class="modal-section-label">Experience</div>
-        ${data.experience.map(exp => `
-          <div class="modal-exp-item">
-            <div class="modal-exp-role">${escHtml(exp.title)}</div>
-            <div class="modal-exp-co">${escHtml(exp.company)}</div>
-            <div class="modal-exp-dates">${exp.start || '?'} - ${exp.end || 'Present'}${exp.is_primary ? '  (current)' : ''}</div>
-          </div>
-        `).join('')}
-      </div>`;
-    }
-
-    if (data.education && data.education.length) {
-      bodyHtml += `<div class="modal-section">
-        <div class="modal-section-label">Education</div>
-        ${data.education.map(edu => `
-          <div class="modal-exp-item">
-            <div class="modal-exp-role">${escHtml(edu.school)}</div>
-            <div class="modal-exp-co">${(edu.degree || []).join(', ')} ${(edu.majors || []).join(', ')}</div>
-          </div>
-        `).join('')}
-      </div>`;
-    }
-
-    if (data.skills && data.skills.length) {
-      bodyHtml += `<div class="modal-section">
-        <div class="modal-section-label">Skills</div>
-        <div class="modal-skills">${data.skills.map(s => `<span class="modal-skill">${escHtml(s)}</span>`).join('')}</div>
-      </div>`;
-    }
-
-    const links = [];
-    if (data.linkedin_url) links.push({ label: 'LinkedIn', url: data.linkedin_url });
-    if (data.github_url) links.push({ label: 'GitHub', url: data.github_url });
-    if (data.twitter_url) links.push({ label: 'Twitter/X', url: data.twitter_url });
-
-    if (links.length) {
-      bodyHtml += `<div class="modal-section">
-        <div class="modal-section-label">Links</div>
-        <div class="modal-links">
-          ${links.map(l => {
-            const href = l.url.startsWith('http') ? l.url : 'https://' + l.url;
-            return `<a href="${href}" target="_blank" rel="noopener" class="modal-link">${escHtml(l.label)}: ${escHtml(l.url)}</a>`;
-          }).join('')}
-        </div>
-      </div>`;
-    }
-
-    modalBody.innerHTML = bodyHtml || '<p style="color:var(--text-tertiary)">No additional data available.</p>';
-  } catch (err) {
-    modalBody.innerHTML = `<div class="empty-state" style="padding:2rem 0">
-      <div class="empty-text">Failed to load profile</div>
-      <div class="empty-hint">${err.message}</div>
-    </div>`;
-  }
+    const d = await resp.json();
+    modalName.textContent = d.name || name;
+    modalTitleCo.textContent = `${d.title || ''} @ ${d.company || ''}`;
+    let h = '';
+    if (d.location) h += `<div class="modal-section"><div class="modal-section-label">Location</div><div style="font-size:0.9rem">${escHtml(d.location)}</div></div>`;
+    if (d.experience?.length) h += `<div class="modal-section"><div class="modal-section-label">Experience</div>${d.experience.map(e=>`<div class="modal-exp-item"><div class="modal-exp-role">${escHtml(e.title)}</div><div class="modal-exp-co">${escHtml(e.company)}</div><div class="modal-exp-dates">${e.start||'?'} - ${e.end||'Present'}${e.is_primary?' (current)':''}</div></div>`).join('')}</div>`;
+    if (d.education?.length) h += `<div class="modal-section"><div class="modal-section-label">Education</div>${d.education.map(e=>`<div class="modal-exp-item"><div class="modal-exp-role">${escHtml(e.school)}</div><div class="modal-exp-co">${(e.degree||[]).join(', ')} ${(e.majors||[]).join(', ')}</div></div>`).join('')}</div>`;
+    if (d.skills?.length) h += `<div class="modal-section"><div class="modal-section-label">Skills</div><div class="modal-skills">${d.skills.map(s=>`<span class="modal-skill">${escHtml(s)}</span>`).join('')}</div></div>`;
+    const links = []; if (d.linkedin_url) links.push({l:'LinkedIn',u:d.linkedin_url}); if (d.github_url) links.push({l:'GitHub',u:d.github_url}); if (d.twitter_url) links.push({l:'Twitter/X',u:d.twitter_url});
+    if (links.length) h += `<div class="modal-section"><div class="modal-section-label">Links</div><div class="modal-links">${links.map(l=>{const hr=l.u.startsWith('http')?l.u:'https://'+l.u;return `<a href="${hr}" target="_blank" rel="noopener" class="modal-link">${escHtml(l.l)}: ${escHtml(l.u)}</a>`;}).join('')}</div></div>`;
+    modalBody.innerHTML = h || '<p style="color:var(--text-muted)">No additional data available.</p>';
+  } catch(e) { modalBody.innerHTML = `<div class="empty-state" style="padding:2rem 0"><div class="empty-text">Failed to load</div><div class="empty-hint">${e.message}</div></div>`; }
 }
 
 modalClose.addEventListener('click', () => modalOverlay.classList.remove('visible'));
-modalOverlay.addEventListener('click', (e) => {
-  if (e.target === modalOverlay) modalOverlay.classList.remove('visible');
-});
-document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape') modalOverlay.classList.remove('visible');
-});
+modalOverlay.addEventListener('click', (e) => { if (e.target === modalOverlay) modalOverlay.classList.remove('visible'); });
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') modalOverlay.classList.remove('visible'); });
 
 // ═══════════════════════════════════════
 // HELPERS
 // ═══════════════════════════════════════
-function appendQuery(text) {
-  searchInput.value += ' ' + text;
-  searchInput.focus();
-}
-
-function getInitials(name) {
-  if (!name) return '?';
-  return name.split(' ').map(w => w[0] || '').join('').toUpperCase().slice(0, 2);
-}
+function appendQuery(t) { searchInput.value += ' ' + t; searchInput.focus(); }
+function getInitials(n) { if (!n) return '?'; return n.split(' ').map(w=>w[0]||'').join('').toUpperCase().slice(0,2); }
 
 const AVATAR_COLORS = [
-  'linear-gradient(135deg, #667eea, #764ba2)',
-  'linear-gradient(135deg, #f093fb, #f5576c)',
-  'linear-gradient(135deg, #4facfe, #00f2fe)',
-  'linear-gradient(135deg, #43e97b, #38f9d7)',
-  'linear-gradient(135deg, #fa709a, #fee140)',
-  'linear-gradient(135deg, #a18cd1, #fbc2eb)',
-  'linear-gradient(135deg, #fccb90, #d57eeb)',
-  'linear-gradient(135deg, #e0c3fc, #8ec5fc)',
-  'linear-gradient(135deg, #f5576c, #ff9a9e)',
-  'linear-gradient(135deg, #0acffe, #495aff)',
+  'linear-gradient(135deg, #7C3AED, #A78BFA)',
+  'linear-gradient(135deg, #22C55E, #4ADE80)',
+  'linear-gradient(135deg, #06B6D4, #22D3EE)',
+  'linear-gradient(135deg, #DB2777, #F472B6)',
+  'linear-gradient(135deg, #F97316, #FB923C)',
+  'linear-gradient(135deg, #5B21B6, #7C3AED)',
+  'linear-gradient(135deg, #0EA5E9, #38BDF8)',
+  'linear-gradient(135deg, #8B5CF6, #C4B5FD)',
 ];
 
-function getAvatarColor(name) {
-  if (!name) return AVATAR_COLORS[0];
-  let hash = 0;
-  for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
-  return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length];
-}
-
-function escHtml(str) {
-  if (!str) return '';
-  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-
-function escAttr(str) {
-  return escHtml(str).replace(/'/g, "\\'");
-}
-
+function getAvatarColor(n) { if (!n) return AVATAR_COLORS[0]; let h=0; for (let i=0;i<n.length;i++) h=n.charCodeAt(i)+((h<<5)-h); return AVATAR_COLORS[Math.abs(h)%AVATAR_COLORS.length]; }
+function escHtml(s) { if (!s) return ''; return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function escAttr(s) { return escHtml(s).replace(/'/g, "\\'"); }
 function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 
 // ═══════════════════════════════════════
 // DEMO MODE
 // ═══════════════════════════════════════
 const DEMO_SCENARIOS = [
-  {
-    query: "帮我找硅谷会 Python 和机器学习的高级工程师",
-    scenario: "recruiting",
-    sql: "SELECT * FROM person WHERE skills LIKE '%python%' AND skills LIKE '%machine learning%' AND job_title LIKE '%senior%' AND location_metro = 'San Francisco, CA'",
-    total: 1225112,
-    people: [
-      { name: "Tao Feng", title: "Staff Software Engineer", company: "Google", location: "San Francisco, CA", company_industry: "Internet", company_size: "10001+", linkedin_url: "https://linkedin.com/in/taofeng", score: 9, reason: "Google Staff 级工程师，Python 和 ML 经验丰富，地点完全匹配", has_email: true, has_phone: false },
-      { name: "Josh Finnie", title: "Senior Software Engineer", company: "People Data Labs", location: "San Francisco, CA", company_industry: "Computer Software", company_size: "201-500", linkedin_url: "https://linkedin.com/in/joshfinnie", score: 8, reason: "高级工程师，数据工程背景，Python 技术栈", has_email: true, has_phone: true },
-      { name: "Jessica Kosturko", title: "Senior Engineering Manager, Google Cloud", company: "Google", location: "San Francisco, CA", company_industry: "Internet", company_size: "10001+", linkedin_url: "https://linkedin.com/in/jkosturko", score: 7, reason: "Google Cloud 工程经理，ML 基础设施背景", has_email: false, has_phone: false },
-      { name: "Priya Nair", title: "Principal ML Engineer", company: "Stripe", location: "San Francisco, CA", company_industry: "Financial Services", company_size: "5001-10000", linkedin_url: "https://linkedin.com/in/priyanair", score: 9, reason: "Stripe 首席 ML 工程师，金融科技 + ML 双背景", has_email: true, has_phone: true },
-      { name: "Kevin Zhang", title: "Senior Data Scientist", company: "Airbnb", location: "San Francisco, CA", company_industry: "Internet", company_size: "5001-10000", linkedin_url: "https://linkedin.com/in/kevinzhang", score: 7, reason: "Airbnb 高级数据科学家，Python 和统计建模", has_email: true, has_phone: false },
+  { query:"帮我找硅谷会 Python 和机器学习的高级工程师", scenario:"recruiting", sql:"SELECT * FROM person WHERE skills LIKE '%python%' AND skills LIKE '%machine learning%' AND job_title LIKE '%senior%' AND location_metro = 'San Francisco, CA'", total:1225112,
+    people:[
+      {name:"Tao Feng",title:"Staff Software Engineer",company:"Google",location:"San Francisco, CA",company_industry:"Internet",company_size:"10001+",linkedin_url:"https://linkedin.com/in/taofeng",score:9,reason:"Google Staff 级工程师，Python 和 ML 经验丰富"},
+      {name:"Josh Finnie",title:"Senior Software Engineer",company:"People Data Labs",location:"San Francisco, CA",company_industry:"Computer Software",company_size:"201-500",linkedin_url:"https://linkedin.com/in/joshfinnie",score:8,reason:"高级工程师，数据工程背景，Python 技术栈"},
+      {name:"Priya Nair",title:"Principal ML Engineer",company:"Stripe",location:"San Francisco, CA",company_industry:"Financial Services",company_size:"5001-10000",linkedin_url:"https://linkedin.com/in/priyanair",score:9,reason:"Stripe 首席 ML 工程师，金融科技 + ML 双背景"},
+      {name:"Kevin Zhang",title:"Senior Data Scientist",company:"Airbnb",location:"San Francisco, CA",company_industry:"Internet",company_size:"5001-10000",linkedin_url:"https://linkedin.com/in/kevinzhang",score:7,reason:"Airbnb 高级数据科学家，Python 和统计建模"},
     ],
-    summary: "共找到 122 万+ 工程师，筛选出 5 位最匹配的硅谷高级 ML/Python 工程师候选人，均来自知名科技公司。",
-    narrowing: { suggestions: ["要限制具体技术栈吗？如 PyTorch / TensorFlow / JAX？", "要指定公司规模吗？比如 1000 人以上的大厂？", "要限制工作年限吗？比如 5 年以上经验？"] }
+    summary:"共找到 122 万+ 工程师，筛选出 4 位最匹配的硅谷高级 ML/Python 工程师。",
+    narrowing:{suggestions:["要限制技术栈吗？如 PyTorch / TensorFlow？","要指定公司规模吗？","要限制工作年限吗？"]}
   },
-  {
-    query: "找 SaaS 行业的市场总监，200人以上的公司",
-    scenario: "marketing",
-    sql: "SELECT * FROM person WHERE job_title LIKE '%marketing director%' AND job_company_industry = 'computer software' AND job_company_employee_count >= 200",
-    total: 48320,
-    people: [
-      { name: "Sarah Chen", title: "Director of Marketing", company: "Salesforce", location: "San Francisco, CA", company_industry: "Computer Software", company_size: "10001+", linkedin_url: "https://linkedin.com/in/sarahchen", score: 9, reason: "Salesforce 市场总监，顶级 SaaS 公司", has_email: true, has_phone: false },
-      { name: "Marcus Webb", title: "VP of Marketing", company: "HubSpot", location: "Boston, MA", company_industry: "Computer Software", company_size: "5001-10000", linkedin_url: "https://linkedin.com/in/marcuswebb", score: 9, reason: "HubSpot 营销副总裁，入站营销领导者", has_email: true, has_phone: true },
-      { name: "Lily Okonkwo", title: "Head of Product Marketing", company: "Notion", location: "New York, NY", company_industry: "Computer Software", company_size: "201-500", linkedin_url: "https://linkedin.com/in/lilyokonkwo", score: 8, reason: "Notion 产品营销负责人，增长型 SaaS 经验", has_email: false, has_phone: false },
-      { name: "Daniel Park", title: "Marketing Director", company: "Figma", location: "San Francisco, CA", company_industry: "Computer Software", company_size: "1001-5000", linkedin_url: "https://linkedin.com/in/danielpark", score: 8, reason: "Figma 市场总监，PLG 营销专家", has_email: true, has_phone: false },
+  { query:"找 SaaS 行业的市场总监", scenario:"marketing", sql:"SELECT * FROM person WHERE job_title LIKE '%marketing director%' AND job_company_industry = 'computer software'", total:48320,
+    people:[
+      {name:"Sarah Chen",title:"Director of Marketing",company:"Salesforce",location:"San Francisco, CA",company_industry:"Computer Software",company_size:"10001+",linkedin_url:"https://linkedin.com/in/sarahchen",score:9,reason:"Salesforce 市场总监"},
+      {name:"Marcus Webb",title:"VP of Marketing",company:"HubSpot",location:"Boston, MA",company_industry:"Computer Software",company_size:"5001-10000",linkedin_url:"https://linkedin.com/in/marcuswebb",score:9,reason:"HubSpot 营销副总裁"},
+      {name:"Daniel Park",title:"Marketing Director",company:"Figma",location:"San Francisco, CA",company_industry:"Computer Software",company_size:"1001-5000",linkedin_url:"https://linkedin.com/in/danielpark",score:8,reason:"Figma 市场总监，PLG 营销专家"},
     ],
-    summary: "共找到 4.8 万名候选人，筛选出 4 位 SaaS 市场总监，均来自知名软件公司。",
+    summary:"共找到 4.8 万名候选人，筛选出 3 位 SaaS 市场总监。",
   },
-  {
-    query: "找科技领域的内容创作者和博主，在美国",
-    scenario: "kol",
-    sql: "SELECT * FROM person WHERE (job_title LIKE '%content creator%' OR job_title LIKE '%blogger%') AND location_country = 'united states'",
-    total: 8740,
-    people: [
-      { name: "Alex Rivera", title: "Tech Content Creator & YouTuber", company: "Independent", location: "Los Angeles, CA", company_industry: "Internet", company_size: "1-10", linkedin_url: "https://linkedin.com/in/alexrivera", score: 9, reason: "科技 YouTube 50 万订阅，AI 评测", has_email: true, has_phone: false },
-      { name: "Maya Johnson", title: "Developer Advocate & Blogger", company: "Vercel", location: "New York, NY", company_industry: "Internet", company_size: "201-500", linkedin_url: "https://linkedin.com/in/mayajohnson", score: 8, reason: "Vercel 开发者布道师，博客影响力大", has_email: true, has_phone: false },
-      { name: "Chris Wu", title: "AI/ML Content Creator", company: "Independent", location: "San Francisco, CA", company_industry: "Internet", company_size: "1-10", linkedin_url: "https://linkedin.com/in/chriswu", score: 8, reason: "AI 内容创作者，Newsletter 3 万+", has_email: false, has_phone: false },
+  { query:"找科技领域的内容创作者", scenario:"kol", sql:"SELECT * FROM person WHERE job_title LIKE '%content creator%' AND location_country = 'united states'", total:8740,
+    people:[
+      {name:"Alex Rivera",title:"Tech Content Creator",company:"Independent",location:"Los Angeles, CA",company_industry:"Internet",company_size:"1-10",linkedin_url:"https://linkedin.com/in/alexrivera",score:9,reason:"YouTube 50 万订阅"},
+      {name:"Maya Johnson",title:"Developer Advocate",company:"Vercel",location:"New York, NY",company_industry:"Internet",company_size:"201-500",linkedin_url:"https://linkedin.com/in/mayajohnson",score:8,reason:"Vercel 开发者布道师"},
     ],
-    summary: "共找到 8700 位科技 KOL，筛选出 3 位活跃美国科技内容创作者。",
+    summary:"共找到 8700 位科技 KOL，筛选出 2 位活跃创作者。",
   },
-  {
-    query: "找医疗行业 500 人以上公司的 VP 或采购负责人",
-    scenario: "sales",
-    sql: "SELECT * FROM person WHERE (job_title LIKE '%vp%' OR job_title LIKE '%procurement%') AND job_company_industry = 'hospital & health care' AND job_company_employee_count >= 500",
-    total: 23150,
-    people: [
-      { name: "Dr. Patricia Moore", title: "VP of Operations", company: "Kaiser Permanente", location: "Oakland, CA", company_industry: "Hospital & Health Care", company_size: "10001+", linkedin_url: "https://linkedin.com/in/patriciamoore", score: 9, reason: "Kaiser 运营副总裁，大规模采购决策权", has_email: false, has_phone: false },
-      { name: "James Thornton", title: "Chief Procurement Officer", company: "Mayo Clinic", location: "Rochester, MN", company_industry: "Hospital & Health Care", company_size: "10001+", linkedin_url: "https://linkedin.com/in/jamesthornton", score: 10, reason: "Mayo Clinic 首席采购官", has_email: true, has_phone: false },
-      { name: "Linda Xu", title: "VP Supply Chain & Procurement", company: "Ascension Health", location: "St. Louis, MO", company_industry: "Hospital & Health Care", company_size: "10001+", linkedin_url: "https://linkedin.com/in/lindaxu", score: 9, reason: "供应链和采购双重职责", has_email: true, has_phone: true },
-      { name: "Susan Blackwell", title: "Director of Purchasing", company: "HCA Healthcare", location: "Nashville, TN", company_industry: "Hospital & Health Care", company_size: "10001+", linkedin_url: "https://linkedin.com/in/susanblackwell", score: 7, reason: "HCA 采购总监，全国最大医院集团", has_email: true, has_phone: false },
+  { query:"找医疗行业 VP", scenario:"sales", sql:"SELECT * FROM person WHERE job_title LIKE '%vp%' AND job_company_industry = 'hospital & health care'", total:23150,
+    people:[
+      {name:"James Thornton",title:"Chief Procurement Officer",company:"Mayo Clinic",location:"Rochester, MN",company_industry:"Hospital & Health Care",company_size:"10001+",linkedin_url:"https://linkedin.com/in/jamesthornton",score:10,reason:"Mayo Clinic 首席采购官"},
+      {name:"Linda Xu",title:"VP Supply Chain",company:"Ascension Health",location:"St. Louis, MO",company_industry:"Hospital & Health Care",company_size:"10001+",linkedin_url:"https://linkedin.com/in/lindaxu",score:9,reason:"供应链和采购双重职责"},
     ],
-    summary: "共找到 2.3 万名候选人，筛选出 4 位大型医疗机构采购决策者。",
+    summary:"共找到 2.3 万名候选人，筛选出 2 位医疗采购决策者。",
   }
 ];
 
 const DEMO_CONVERSATIONS = [
-  { ...DEMO_SCENARIOS[0], firstMsg: "帮我找工程师", aiQuestion: "好的！请问是用于招聘候选人，还是其他目的？另外，有偏好的技术方向和地区吗？", userReply: "招聘，Python 机器学习方向，硅谷优先" },
-  { ...DEMO_SCENARIOS[1], firstMsg: "找一些市场方面的人", aiQuestion: "明白！请问是想找营销目标受众，还是招聘市场人才？目标行业有要求吗？", userReply: "营销，SaaS 软件行业，200 人以上的公司" },
-  { ...DEMO_SCENARIOS[2], firstMsg: "找一些博主", aiQuestion: "了解！请问是科技类博主，还是其他领域？主要在哪个地区？", userReply: "科技内容创作者，美国，有一定影响力的" },
-  { ...DEMO_SCENARIOS[3], firstMsg: "找一些可以聊合作的人", aiQuestion: "明白！请问是销售拓客，还是其他合作目的？目标行业和职位层级有要求吗？", userReply: "销售，医疗行业，VP 级别以上，500 人大公司" },
+  {...DEMO_SCENARIOS[0], firstMsg:"帮我找工程师", aiQuestion:"好的！请问是用于招聘候选人，还是其他目的？有偏好的技术方向和地区吗？", userReply:"招聘，Python 机器学习方向，硅谷优先"},
+  {...DEMO_SCENARIOS[1], firstMsg:"找一些市场方面的人", aiQuestion:"明白！请问是想找营销目标受众，还是招聘市场人才？", userReply:"营销，SaaS 软件行业"},
+  {...DEMO_SCENARIOS[2], firstMsg:"找一些博主", aiQuestion:"了解！请问是科技类博主，还是其他领域？", userReply:"科技内容创作者，美国"},
+  {...DEMO_SCENARIOS[3], firstMsg:"找一些可以聊合作的人", aiQuestion:"明白！请问是销售拓客，还是其他合作目的？", userReply:"销售，医疗行业，VP 级别以上"},
 ];
 
-let demoIndex = 0;
-let demoPlaying = false;
+let demoIndex = 0, demoPlaying = false;
 
 async function runDemo() {
   if (demoPlaying) return;
   demoPlaying = true;
-
-  // Ensure we're in app view
   if (state.page !== 'app') showApp();
   goHome();
   await sleep(300);
@@ -2427,57 +2053,37 @@ async function runDemo() {
   const conv = DEMO_CONVERSATIONS[demoIndex % DEMO_CONVERSATIONS.length];
   demoIndex++;
 
-  // Step 1: Type first message
   await typeInto(searchInput, conv.firstMsg);
   await sleep(600);
 
-  // Step 2: Simulate loading
-  searchLoading.classList.add('active');
-  searchBtn.disabled = true;
+  searchLoading.classList.add('active'); searchBtn.disabled = true;
   await sleep(900);
-  searchLoading.classList.remove('active');
-  searchBtn.disabled = false;
+  searchLoading.classList.remove('active'); searchBtn.disabled = false;
 
-  // Step 3: AI asks follow-up
   appendChatBubble('user', conv.firstMsg);
   appendChatBubble('ai', conv.aiQuestion);
-  searchInput.value = '';
-  searchInput.style.height = 'auto';
+  searchInput.value = ''; searchInput.style.height = 'auto';
   await sleep(1200);
 
-  // Step 4: User replies
   await typeInto(searchInput, conv.userReply);
   await sleep(700);
 
-  // Step 5: Loading + search
-  searchLoading.classList.add('active');
-  searchBtn.disabled = true;
-  examples.style.display = 'none';
-  resultsArea.innerHTML = '';
+  searchLoading.classList.add('active'); searchBtn.disabled = true;
+  examples.style.display = 'none'; resultsArea.innerHTML = '';
   await sleep(1400);
-  searchLoading.classList.remove('active');
-  searchBtn.disabled = false;
+  searchLoading.classList.remove('active'); searchBtn.disabled = false;
 
-  // Step 6: Show results
-  document.querySelectorAll('.scenario-chip').forEach(c => {
-    c.classList.toggle('active', c.dataset.scenario === conv.scenario);
-  });
-  headerMeta.textContent = `${SCENARIO_LABELS[conv.scenario]} · ${(conv.total || 0).toLocaleString()} matches · DEMO`;
+  headerMeta.textContent = `${SCENARIO_LABELS[conv.scenario]} · ${(conv.total||0).toLocaleString()} matches · DEMO`;
   state.results = conv;
   renderResults(conv);
-  addToHistory(conv.query, conv.scenario, (conv.people || []).length);
+  addToHistory(conv.query, conv.scenario, (conv.people||[]).length);
 
   demoPlaying = false;
 }
 
 async function typeInto(el, text) {
   el.value = '';
-  for (const char of text) {
-    el.value += char;
-    el.style.height = 'auto';
-    el.style.height = Math.min(el.scrollHeight, 120) + 'px';
-    await sleep(25 + Math.random() * 25);
-  }
+  for (const ch of text) { el.value += ch; el.style.height = 'auto'; el.style.height = Math.min(el.scrollHeight, 120) + 'px'; await sleep(22 + Math.random() * 22); }
 }
 
 // ═══════════════════════════════════════
