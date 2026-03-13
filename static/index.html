@@ -1688,6 +1688,8 @@ async function checkAuth() {
       updateAccountUI();
       await loadHistoryFromAPI();
       await loadFavoritesFromAPI();
+      // Already logged in — go directly to app
+      showApp();
     }
   } catch (e) { console.warn('Auth check failed:', e); }
 }
@@ -1879,38 +1881,88 @@ async function doSearch() {
   resultsArea.innerHTML = '';
   if (!state.sessionId) examples.style.display = 'none';
 
+  // Record query in history immediately (every turn counts)
+  addToHistory(query, state.scenario, 0);
+
+  // Show user message bubble
+  appendChatBubble('user', query);
+  searchInput.value = '';
+  searchInput.style.height = 'auto';
+
+  // Create streaming AI bubble
+  const aiBubble = document.createElement('div');
+  aiBubble.className = 'chat-bubble ai';
+  aiBubble.textContent = '';
+  chatThread.appendChild(aiBubble);
+
   try {
-    const resp = await fetch('/api/chat', {
+    const resp = await fetch('/api/chat/stream', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
       body: JSON.stringify({ message: query, session_id: state.sessionId }),
     });
     if (!resp.ok) throw new Error(`Server error: ${resp.status}`);
-    const data = await resp.json();
-    if (data.session_id) state.sessionId = data.session_id;
 
-    if (data.type === 'question') {
-      appendChatBubble('user', query);
-      appendChatBubble('ai', data.question);
-      searchInput.value = '';
-      searchInput.style.height = 'auto';
+    const reader = resp.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+    let finalData = null;
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+
+      // Process SSE lines
+      const lines = buffer.split('\n');
+      buffer = lines.pop(); // keep incomplete line
+
+      for (const line of lines) {
+        if (!line.startsWith('data: ')) continue;
+        try {
+          const evt = JSON.parse(line.slice(6));
+          if (evt.type === 'session') {
+            state.sessionId = evt.session_id;
+          } else if (evt.type === 'chunk') {
+            aiBubble.textContent += evt.text;
+            aiBubble.scrollIntoView({ behavior: 'smooth', block: 'end' });
+          } else if (evt.type === 'done') {
+            finalData = evt;
+          }
+        } catch (e) {}
+      }
+    }
+
+    if (!finalData) throw new Error('No response from agent');
+
+    if (finalData.type === 'question') {
+      // AI asked a question — bubble already shows it, just focus input
       searchInput.focus();
       return;
     }
 
-    state.results = data;
+    // Got results
+    state.results = finalData;
     examples.style.display = 'none';
-    const sc = data.scenario || 'recruiting';
-    headerMeta.textContent = `${SCENARIO_LABELS[sc] || sc} · ${(data.total || 0).toLocaleString()} matches`;
-    addToHistory(query, sc, (data.people || []).length);
+    const sc = finalData.scenario || 'recruiting';
+    headerMeta.textContent = `${SCENARIO_LABELS[sc] || sc} · ${(finalData.total || 0).toLocaleString()} matches`;
 
-    if (data.error) {
-      resultsArea.innerHTML = `<div class="empty-state"><div class="empty-text">API Error</div><div class="empty-hint">${escHtml(data.error)}</div></div>`;
+    // Update the history entry with result count
+    if (state.searchHistory.length > 0) {
+      state.searchHistory[0].cnt = (finalData.people || []).length;
+      state.searchHistory[0].scenario = sc;
+      localStorage.setItem('wh_history', JSON.stringify(state.searchHistory));
+      updateHistoryPanel();
+    }
+
+    if (finalData.error) {
+      resultsArea.innerHTML = `<div class="empty-state"><div class="empty-text">API Error</div><div class="empty-hint">${escHtml(finalData.error)}</div></div>`;
     } else {
-      renderResults(data);
+      renderResults(finalData);
     }
   } catch (err) {
-    resultsArea.innerHTML = `<div class="empty-state"><div class="empty-text">Search failed</div><div class="empty-hint">${escHtml(err.message)}</div></div>`;
+    aiBubble.textContent = 'Search failed: ' + err.message;
+    aiBubble.style.color = '#FCA5A5';
   } finally {
     state.loading = false;
     searchBtn.disabled = false;
@@ -2002,11 +2054,13 @@ function clearChatBubbles() { chatThread.innerHTML = ''; }
 // HISTORY & FAVORITES
 // ═══════════════════════════════════════
 function addToHistory(query, scenario, cnt) {
+  // Deduplicate: if same query is already the most recent, skip
+  if (state.searchHistory.length > 0 && state.searchHistory[0].query === query) return;
   state.searchHistory.unshift({ query, scenario, cnt, time: Date.now() });
   if (state.searchHistory.length > 20) state.searchHistory = state.searchHistory.slice(0, 20);
   localStorage.setItem('wh_history', JSON.stringify(state.searchHistory));
   updateHistoryPanel();
-  // API save happens automatically in /api/chat when authenticated
+  // API save happens automatically in /api/chat/stream when authenticated
 }
 
 function updateHistoryPanel() {

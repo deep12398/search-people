@@ -6,7 +6,7 @@ import uuid
 import time
 from pathlib import Path
 from fastapi import FastAPI, HTTPException, Request, Depends
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
@@ -186,20 +186,21 @@ async def api_chat(req: ChatRequest, request: Request):
     parsed = _parse_agent_response(response_text)
     parsed["session_id"] = sid
 
-    # Auto-save search history if user is authenticated and we got results
-    if SUPABASE_URL and parsed.get("type") == "results":
+    # Auto-save search history for every conversation turn (not just results)
+    if SUPABASE_URL:
         auth_user = await get_current_user(request)
         if auth_user:
             try:
                 from src.supabase_client import save_search_history, save_search_results
+                result_count = parsed.get("total", 0) if parsed.get("type") == "results" else 0
                 history_row = await save_search_history(
                     user_id=auth_user.id,
                     query=req.message,
                     scenario=parsed.get("scenario", "auto"),
-                    result_count=parsed.get("total", 0),
+                    result_count=result_count,
                     access_token=auth_user.token,
                 )
-                if history_row.get("id"):
+                if history_row.get("id") and parsed.get("type") == "results":
                     await save_search_results(
                         search_id=history_row["id"],
                         people=parsed.get("people", []),
@@ -211,6 +212,62 @@ async def api_chat(req: ChatRequest, request: Request):
                 pass  # Don't fail the search if DB save fails
 
     return parsed
+
+
+@app.post("/api/chat/stream")
+async def api_chat_stream(req: ChatRequest, request: Request):
+    """Streaming chat endpoint using SSE. Sends text chunks as they arrive."""
+    try:
+        sid, client = await _get_or_create_session(req.session_id or None)
+    except Exception as e:
+        raise HTTPException(500, f"Failed to create agent session: {e}")
+
+    auth_user = await get_current_user(request) if SUPABASE_URL else None
+
+    async def event_stream():
+        # Send session_id immediately
+        yield f"data: {json.dumps({'type': 'session', 'session_id': sid})}\n\n"
+
+        await client.query(req.message)
+
+        response_text = ""
+        async for message in client.receive_response():
+            if isinstance(message, AssistantMessage):
+                for block in message.content:
+                    if isinstance(block, TextBlock):
+                        response_text += block.text
+                        # Stream each text chunk
+                        yield f"data: {json.dumps({'type': 'chunk', 'text': block.text})}\n\n"
+
+        # Send final parsed result
+        parsed = _parse_agent_response(response_text)
+        parsed["session_id"] = sid
+        yield f"data: {json.dumps({'type': 'done', **parsed})}\n\n"
+
+        # Save history
+        if auth_user:
+            try:
+                from src.supabase_client import save_search_history, save_search_results
+                result_count = parsed.get("total", 0) if parsed.get("type") == "results" else 0
+                history_row = await save_search_history(
+                    user_id=auth_user.id,
+                    query=req.message,
+                    scenario=parsed.get("scenario", "auto"),
+                    result_count=result_count,
+                    access_token=auth_user.token,
+                )
+                if history_row.get("id") and parsed.get("type") == "results":
+                    await save_search_results(
+                        search_id=history_row["id"],
+                        people=parsed.get("people", []),
+                        sql_used=parsed.get("sql", ""),
+                        summary=parsed.get("summary", ""),
+                        access_token=auth_user.token,
+                    )
+            except Exception:
+                pass
+
+    return StreamingResponse(event_stream(), media_type="text/event-stream")
 
 
 @app.delete("/api/chat/{session_id}")
