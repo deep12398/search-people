@@ -192,45 +192,48 @@ async def api_chat_stream(req: ChatRequest, request: Request):
         # Send session_id immediately
         yield f"data: {json.dumps({'type': 'session', 'session_id': sid})}\n\n"
 
-        guard.start_turn()
-        await client.query(req.message)
+        try:
+            guard.start_turn()
+            await client.query(req.message)
 
-        response_text = ""
-        async for message in client.receive_response():
-            if isinstance(message, AssistantMessage):
-                for block in message.content:
-                    if isinstance(block, TextBlock):
-                        response_text += block.text
-                        # Stream each text chunk
-                        yield f"data: {json.dumps({'type': 'chunk', 'text': block.text})}\n\n"
+            response_text = ""
+            async for message in client.receive_response():
+                if isinstance(message, AssistantMessage):
+                    for block in message.content:
+                        if isinstance(block, TextBlock):
+                            response_text += block.text
+                            yield f"data: {json.dumps({'type': 'chunk', 'text': block.text})}\n\n"
 
-        # Send final parsed result
-        parsed = _parse_agent_response(response_text)
-        parsed["session_id"] = sid
-        yield f"data: {json.dumps({'type': 'done', **parsed})}\n\n"
+            # Send final parsed result
+            parsed = _parse_agent_response(response_text)
+            parsed["session_id"] = sid
+            yield f"data: {json.dumps({'type': 'done', **parsed})}\n\n"
 
-        # Save history
-        if auth_user:
-            try:
-                from src.supabase_client import save_search_history, save_search_results
-                result_count = parsed.get("total", 0) if parsed.get("type") == "results" else 0
-                history_row = await save_search_history(
-                    user_id=auth_user.id,
-                    query=req.message,
-                    scenario=parsed.get("scenario", "auto"),
-                    result_count=result_count,
-                    access_token=auth_user.token,
-                )
-                if history_row.get("id") and parsed.get("type") == "results":
-                    await save_search_results(
-                        search_id=history_row["id"],
-                        people=parsed.get("people", []),
-                        sql_used=parsed.get("sql", ""),
-                        summary=parsed.get("summary", ""),
+            # Save history
+            if auth_user:
+                try:
+                    from src.supabase_client import save_search_history, save_search_results
+                    result_count = parsed.get("total", 0) if parsed.get("type") == "results" else 0
+                    history_row = await save_search_history(
+                        user_id=auth_user.id,
+                        query=req.message,
+                        scenario=parsed.get("scenario", "auto"),
+                        result_count=result_count,
                         access_token=auth_user.token,
                     )
-            except Exception:
-                pass
+                    if history_row.get("id") and parsed.get("type") == "results":
+                        await save_search_results(
+                            search_id=history_row["id"],
+                            people=parsed.get("people", []),
+                            sql_used=parsed.get("sql", ""),
+                            summary=parsed.get("summary", ""),
+                            access_token=auth_user.token,
+                        )
+                except Exception:
+                    pass
+        except Exception as e:
+            error_data = {'type': 'done', 'question': f'Agent error: {e}', 'session_id': sid}
+            yield f"data: {json.dumps(error_data)}\n\n"
 
     return StreamingResponse(event_stream(), media_type="text/event-stream")
 

@@ -882,13 +882,19 @@ button { font-family: var(--font-body); }
 }
 
 /* Chat Thread */
-.chat-thread {
+#chatThread {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
   width: 100%;
   max-width: 700px;
-  margin-top: 0.5rem;
+  margin-top: 1rem;
+}
+.chat-thread {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  width: 100%;
 }
 
 .chat-bubble {
@@ -1904,11 +1910,13 @@ async function doSearch() {
   searchInput.value = '';
   searchInput.style.height = 'auto';
 
-  // Create streaming AI bubble
+  // Create streaming AI bubble (inside the chat-thread wrapper)
   const aiBubble = document.createElement('div');
   aiBubble.className = 'chat-bubble ai';
   aiBubble.textContent = '';
-  chatThread.appendChild(aiBubble);
+  let thread = chatThread.querySelector('.chat-thread');
+  if (!thread) { thread = document.createElement('div'); thread.className = 'chat-thread'; chatThread.appendChild(thread); }
+  thread.appendChild(aiBubble);
 
   try {
     const resp = await fetch('/api/chat/stream', {
@@ -1950,8 +1958,11 @@ async function doSearch() {
 
     if (!finalData) throw new Error('No response from agent');
 
-    if (finalData.type === 'question') {
-      // AI asked a question — bubble already shows it, just focus input
+    if (finalData.question || finalData.type === 'question') {
+      // AI asked a question or error — bubble already shows it, just focus input
+      if (finalData.question && !aiBubble.textContent) {
+        aiBubble.textContent = finalData.question;
+      }
       searchInput.focus();
       return;
     }
