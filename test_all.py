@@ -2,12 +2,22 @@
 
 import asyncio
 import json
-import sys
 import os
+import sys
 
 sys.path.insert(0, os.path.dirname(__file__))
 
-from src.config import get_anthropic_client, ANTHROPIC_BASE_URL, PARSE_MODEL, PDL_API_KEY, system_prompt
+from src.config import (
+    ANTHROPIC_API_KEY,
+    ANTHROPIC_BASE_URL,
+    DB_HOST,
+    PARSE_MODEL,
+    PDL_API_KEY,
+    get_anthropic_client,
+    system_prompt,
+)
+
+SKIPPED = object()
 
 
 def test_1_anthropic_connection():
@@ -47,17 +57,113 @@ def test_2_query_parser():
     assert "sql_query" in params, "Should have sql_query"
     assert "SELECT" in params["sql_query"].upper(), "Should be a SQL query"
     print("  ✅ PASS")
-    return params
+    return True
 
 
-def test_3_pdl_search():
-    """Test 3: PDL Person Search API."""
+def test_3_local_search():
+    """Test 3: Local PostgreSQL full-text search."""
     print("\n" + "=" * 50)
-    print("TEST 3: PDL 搜索测试")
+    print("TEST 3: 本地搜索测试")
+
+    if not DB_HOST:
+        print("  ❌ SKIP: DB_HOST 未配置，无法连接本地 people 数据库")
+        return SKIPPED
+
+    from src.local_search import search_local
+
+    query = "machine learning"
+    filters = {"country": "united states"}
+    print(f"  Query: {query}")
+    print(f"  Filters: {filters}")
+
+    try:
+        results = asyncio.run(search_local(query, filters=filters, size=3))
+        total = results.get("total", 0)
+        people = results.get("people", [])
+        print(f"  Total: {total}, Returned: {len(people)}")
+        for person in people[:3]:
+            print(f"    - {person['name']} | {person['title']} @ {person['company']} | {person['location']}")
+        assert total > 0, "Local search should return results for machine learning in united states"
+        print("  ✅ PASS")
+        return True
+    except Exception as e:
+        print(f"  ❌ FAIL: {e}")
+        return False
+
+
+def test_4_agent_local_first():
+    """Test 4: Agent must call local_search first and avoid PDL when local results exist."""
+    print("\n" + "=" * 50)
+    print("TEST 4: Agent local_search 优先路径测试")
+
+    if not ANTHROPIC_API_KEY:
+        print("  ❌ SKIP: ANTHROPIC_API_KEY 未配置，无法运行 Agent SDK 测试")
+        return SKIPPED
+
+    if not DB_HOST:
+        print("  ❌ SKIP: DB_HOST 未配置，无法验证本地优先搜索")
+        return SKIPPED
+
+    from claude_agent_sdk import AssistantMessage, ClaudeSDKClient, HookMatcher, TextBlock
+    from src.agent_runtime import create_agent_options
+
+    tool_calls = []
+
+    async def capture_tool_use(hook_input, session_id, context):
+        del session_id, context
+        tool_name = getattr(hook_input, "tool_name", None)
+        if tool_name is None and isinstance(hook_input, dict):
+            tool_name = hook_input.get("tool_name") or hook_input.get("toolName")
+
+        tool_input = getattr(hook_input, "tool_input", None)
+        if tool_input is None and isinstance(hook_input, dict):
+            tool_input = hook_input.get("tool_input") or hook_input.get("toolInput") or {}
+
+        tool_calls.append((tool_name, dict(tool_input or {})))
+        return {}
+
+    async def run_agent_once():
+        guard, options = create_agent_options(
+            include_json_results=False,
+            max_turns=10,
+            hooks={"PreToolUse": [HookMatcher(hooks=[capture_tool_use])]},
+        )
+        async with ClaudeSDKClient(options=options) as client:
+            guard.start_turn()
+            await client.query("直接搜索美国的 machine learning engineer，不要追问，不要使用 PDL。")
+            response_text = ""
+            async for message in client.receive_response():
+                if isinstance(message, AssistantMessage):
+                    for block in message.content:
+                        if isinstance(block, TextBlock):
+                            response_text += block.text
+            return response_text
+
+    try:
+        response_text = asyncio.run(run_agent_once())
+        tool_names = [name for name, _ in tool_calls]
+        normalized_tool_names = [name.split("__")[-1] if isinstance(name, str) else name for name in tool_names]
+        print(f"  Tool calls: {tool_names}")
+        print(f"  Response preview: {response_text[:160]}")
+        assert tool_calls, "Agent should call at least one tool"
+        assert normalized_tool_names[0] == "local_search", f"Expected first tool to be local_search, got {tool_calls[0][0]}"
+        assert "parse_search_query" not in normalized_tool_names, "Agent should not call parse_search_query when local_search has results"
+        assert "pdl_search" not in normalized_tool_names, "Agent should not call pdl_search when local_search has results"
+        print("  ✅ PASS")
+        return True
+    except Exception as e:
+        print(f"  ❌ FAIL: {e}")
+        return False
+
+
+def test_5_pdl_search():
+    """Test 5: PDL Person Search API."""
+    print("\n" + "=" * 50)
+    print("TEST 5: PDL 搜索测试")
 
     if not PDL_API_KEY or PDL_API_KEY == "your_pdl_api_key_here":
         print("  ❌ SKIP: PDL_API_KEY 未配置，请在 .env 中填入")
-        return []
+        return SKIPPED
 
     from src.pdl_client import search_people
 
@@ -75,20 +181,20 @@ def test_3_pdl_search():
         for p in people:
             print(f"    - {p['name']} | {p['title']} @ {p['company']} | {p['location']}")
         print("  ✅ PASS")
-        return people
+        return True
     except Exception as e:
         print(f"  ❌ FAIL: {e}")
-        return []
+        return False
 
 
-def test_4_pdl_enrich():
-    """Test 4: PDL Person Enrichment."""
+def test_6_pdl_enrich():
+    """Test 6: PDL Person Enrichment."""
     print("\n" + "=" * 50)
-    print("TEST 4: PDL 详情丰富测试")
+    print("TEST 6: PDL 详情丰富测试")
 
     if not PDL_API_KEY or PDL_API_KEY == "your_pdl_api_key_here":
         print("  ❌ SKIP: PDL_API_KEY 未配置")
-        return False
+        return SKIPPED
 
     from src.pdl_client import enrich_person
 
@@ -112,10 +218,10 @@ def test_4_pdl_enrich():
         return False
 
 
-def test_5_result_scoring():
-    """Test 5: LLM result scoring."""
+def test_7_result_scoring():
+    """Test 7: LLM result scoring."""
     print("\n" + "=" * 50)
-    print("TEST 5: 结果评分和摘要测试")
+    print("TEST 7: 结果评分和摘要测试")
 
     from src.result_processor import score_and_summarize
 
@@ -134,10 +240,10 @@ def test_5_result_scoring():
     return True
 
 
-def test_6_param_relaxation():
-    """Test 6: Auto parameter relaxation."""
+def test_8_param_relaxation():
+    """Test 8: Auto parameter relaxation."""
     print("\n" + "=" * 50)
-    print("TEST 6: SQL 自动放宽测试")
+    print("TEST 8: SQL 自动放宽测试")
 
     from src.param_refiner import relax_params
 
@@ -150,10 +256,10 @@ def test_6_param_relaxation():
     return True
 
 
-def test_7_narrowing_suggestions():
-    """Test 7: Narrowing suggestions."""
+def test_9_narrowing_suggestions():
+    """Test 9: Narrowing suggestions."""
     print("\n" + "=" * 50)
-    print("TEST 7: 追问建议测试")
+    print("TEST 9: 追问建议测试")
 
     from src.param_refiner import suggest_narrowing
 
@@ -175,18 +281,22 @@ if __name__ == "__main__":
     tests = [
         ("Anthropic 连接", test_1_anthropic_connection),
         ("NL → PDL SQL", test_2_query_parser),
-        ("PDL 搜索", test_3_pdl_search),
-        ("PDL 详情", test_4_pdl_enrich),
-        ("结果评分", test_5_result_scoring),
-        ("SQL 放宽", test_6_param_relaxation),
-        ("追问建议", test_7_narrowing_suggestions),
+        ("本地搜索", test_3_local_search),
+        ("Agent local-first", test_4_agent_local_first),
+        ("PDL 搜索", test_5_pdl_search),
+        ("PDL 详情", test_6_pdl_enrich),
+        ("结果评分", test_7_result_scoring),
+        ("SQL 放宽", test_8_param_relaxation),
+        ("追问建议", test_9_narrowing_suggestions),
     ]
 
     for name, fn in tests:
         try:
             result = fn()
-            if result == [] or result is False:
+            if result is SKIPPED:
                 skipped += 1
+            elif result is False:
+                failed += 1
             else:
                 passed += 1
         except Exception as e:

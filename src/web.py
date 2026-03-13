@@ -10,8 +10,8 @@ from fastapi.responses import HTMLResponse, StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
-from claude_agent_sdk import ClaudeSDKClient, ClaudeAgentOptions, AssistantMessage, TextBlock
-from src.tools import create_tools_server
+from claude_agent_sdk import AssistantMessage, ClaudeSDKClient, TextBlock
+from src.agent_runtime import SearchFlowGuard, build_system_prompt, create_agent_options
 from src.pdl_client import enrich_person
 from src.auth import get_current_user, require_auth
 from src.config import SUPABASE_URL, SUPABASE_ANON_KEY
@@ -21,57 +21,10 @@ app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], all
 
 STATIC_DIR = Path(__file__).parent.parent / "static"
 
-# ─── Agent system prompt (web version) ───────────────────────────────────────
-# 与 main.py 的 CLI 版本相比，多了一个约定：有结果时输出 JSON 代码块
-SYSTEM_PROMPT = """\
-你是一个专业的人脉搜索助手，使用 People Data Labs (PDL) 作为数据源。用中文与用户交流。
-
-## 支持的场景
-| 场景 | 典型需求 |
-|------|----------|
-| **recruiting** | 找候选人、技术人才 |
-| **marketing** | 找目标受众、营销对象 |
-| **kol** | 找博主、意见领袖 |
-| **sales** | 找决策人、BD对象 |
-
-## 工作流程
-
-### 第一步：深挖需求（重要！）
-用户描述往往很模糊。**在搜索之前，先追问一个最关键的问题**，帮助明确：
-- 使用场景（招聘/营销/KOL/销售）
-- 行业、技术栈或职能方向
-- 地域或公司规模
-- 职级或经验要求
-
-满足以下 2 条以上才发起搜索：场景明确、行业/技能明确、地域/规模明确、职级明确。
-如果用户拒绝回答或已经明确说"直接搜"，则立即搜索。
-
-### 第二步：解析 + 搜索
-调用 parse_search_query 生成 PDL SQL，再调用 pdl_search 搜索。
-根据结果数量：
-- **0 结果**：调用 auto_relax_params 放宽条件重试
-- **>1000 结果**：调用 suggest_narrowing 生成追问
-- **5~1000 条**：调用 score_and_filter_results 评分筛选
-
-### 第三步：输出结果（关键格式要求）
-有搜索结果时，**必须**在回复末尾输出以下格式的 JSON 代码块：
-
-```json
-{"type":"results","scenario":"recruiting","sql":"SELECT ...","total":1234,"people":[...],"summary":"..."}
-```
-
-people 数组中每个对象保留：name, title, company, location, company_industry, company_size, linkedin_url, score, reason, has_email, has_phone
-
-如果追问用户（没有结果），**不要**输出 JSON，只输出纯文本问题。
-
-## 规则
-- pdl_enrich 消耗 1 credit/次，使用前提醒用户
-- 搜索参数中的职位、地点、行业用英文小写
-- 场景识别是自动的，用户明确说了场景以用户为准
-"""
+SYSTEM_PROMPT = build_system_prompt(include_json_results=True)
 
 # ─── Session store ────────────────────────────────────────────────────────────
-# session_id → {client: ClaudeSDKClient, created_at: float}
+# session_id → {client: ClaudeSDKClient, guard: SearchFlowGuard, created_at: float}
 _sessions: dict[str, dict] = {}
 SESSION_TTL = 3600  # 1 hour
 
@@ -84,26 +37,25 @@ def _cleanup_sessions():
         _sessions.pop(sid, None)
 
 
-async def _get_or_create_session(session_id: str | None) -> tuple[str, ClaudeSDKClient]:
+async def _get_or_create_session(session_id: str | None) -> tuple[str, ClaudeSDKClient, SearchFlowGuard]:
     """Get existing or create new Agent SDK session."""
     _cleanup_sessions()
 
     if session_id and session_id in _sessions:
-        return session_id, _sessions[session_id]["client"]
+        session = _sessions[session_id]
+        return session_id, session["client"], session["guard"]
 
     # Create new session
     sid = session_id or str(uuid.uuid4())
-    server = create_tools_server()
-    options = ClaudeAgentOptions(
-        system_prompt=SYSTEM_PROMPT,
-        mcp_servers={"people-search": server},
+    guard, options = create_agent_options(
+        include_json_results=True,
         max_turns=30,
-        permission_mode="bypassPermissions",
+        system_prompt=SYSTEM_PROMPT,
     )
     client = ClaudeSDKClient(options=options)
     await client.connect()
-    _sessions[sid] = {"client": client, "created_at": time.time()}
-    return sid, client
+    _sessions[sid] = {"client": client, "guard": guard, "created_at": time.time()}
+    return sid, client, guard
 
 
 def _parse_agent_response(text: str) -> dict:
@@ -167,11 +119,12 @@ async def api_config():
 async def api_chat(req: ChatRequest, request: Request):
     """Stateful chat endpoint using Agent SDK. Handles clarification + search."""
     try:
-        sid, client = await _get_or_create_session(req.session_id or None)
+        sid, client, guard = await _get_or_create_session(req.session_id or None)
     except Exception as e:
         raise HTTPException(500, f"Failed to create agent session: {e}")
 
     # Send message to agent
+    guard.start_turn()
     await client.query(req.message)
 
     # Collect response
@@ -218,7 +171,7 @@ async def api_chat(req: ChatRequest, request: Request):
 async def api_chat_stream(req: ChatRequest, request: Request):
     """Streaming chat endpoint using SSE. Sends text chunks as they arrive."""
     try:
-        sid, client = await _get_or_create_session(req.session_id or None)
+        sid, client, guard = await _get_or_create_session(req.session_id or None)
     except Exception as e:
         raise HTTPException(500, f"Failed to create agent session: {e}")
 
@@ -228,6 +181,7 @@ async def api_chat_stream(req: ChatRequest, request: Request):
         # Send session_id immediately
         yield f"data: {json.dumps({'type': 'session', 'session_id': sid})}\n\n"
 
+        guard.start_turn()
         await client.query(req.message)
 
         response_text = ""

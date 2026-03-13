@@ -6,3 +6,5 @@ fastapi
 uvicorn[standard]
 supabase
 PyJWT
+pandas
+psycopg2-binary

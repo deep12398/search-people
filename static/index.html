@@ -1232,6 +1232,17 @@ button { font-family: var(--font-body); }
 }
 .action-btn.reveal:hover { background: var(--purple-light); }
 
+.refresh-btn {
+  background: var(--bg-elevated) !important;
+  border-color: var(--border-strong) !important;
+  color: var(--text) !important;
+}
+.refresh-btn:hover {
+  background: var(--purple) !important;
+  border-color: var(--purple) !important;
+  color: white !important;
+}
+
 /* Empty State */
 .empty-state {
   text-align: center;
@@ -1759,6 +1770,8 @@ const state = {
   searchHistory: JSON.parse(localStorage.getItem('wh_history') || '[]'),
   favorites: JSON.parse(localStorage.getItem('wh_favorites') || '[]'),
   page: 'landing',
+  searchPage: 0,
+  lastQuery: '',
 };
 
 const SCENARIO_LABELS = { recruiting: 'Recruiting', marketing: 'Marketing', kol: 'KOL', sales: 'Sales' };
@@ -1876,6 +1889,8 @@ async function doSearch() {
   if (!query || state.loading) return;
 
   state.loading = true;
+  state.searchPage = 0;
+  state.lastQuery = query;
   searchBtn.disabled = true;
   searchLoading.classList.add('active');
   resultsArea.innerHTML = '';
@@ -1943,6 +1958,7 @@ async function doSearch() {
 
     // Got results
     state.results = finalData;
+    state.searchPage = finalData.page || 0;
     examples.style.display = 'none';
     const sc = finalData.scenario || 'recruiting';
     headerMeta.textContent = `${SCENARIO_LABELS[sc] || sc} · ${(finalData.total || 0).toLocaleString()} matches`;
@@ -1971,15 +1987,96 @@ async function doSearch() {
 }
 
 // ═══════════════════════════════════════
+// REFRESH (NEXT BATCH)
+// ═══════════════════════════════════════
+async function refreshResults() {
+  if (state.loading || !state.sessionId) return;
+
+  state.searchPage++;
+  state.loading = true;
+  searchBtn.disabled = true;
+  searchLoading.classList.add('active');
+
+  // Determine message: ask agent to fetch next page
+  const hasMore = state.results && state.results.has_more;
+  const msg = hasMore
+    ? `换一批，page=${state.searchPage}`
+    : '本地数据已看完，请从 PDL 全球数据库搜索更多结果';
+
+  appendChatBubble('user', hasMore ? 'Next batch' : 'Search global database...');
+
+  const aiBubble = document.createElement('div');
+  aiBubble.className = 'chat-bubble ai';
+  aiBubble.textContent = hasMore ? '' : 'Expanding to global database...';
+  chatThread.appendChild(aiBubble);
+
+  try {
+    const resp = await fetch('/api/chat/stream', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
+      body: JSON.stringify({ message: msg, session_id: state.sessionId }),
+    });
+    if (!resp.ok) throw new Error(`Server error: ${resp.status}`);
+
+    const reader = resp.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+    let finalData = null;
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split('\n');
+      buffer = lines.pop();
+      for (const line of lines) {
+        if (!line.startsWith('data: ')) continue;
+        try {
+          const evt = JSON.parse(line.slice(6));
+          if (evt.type === 'chunk') {
+            aiBubble.textContent += evt.text;
+            aiBubble.scrollIntoView({ behavior: 'smooth', block: 'end' });
+          } else if (evt.type === 'done') {
+            finalData = evt;
+          }
+        } catch (e) {}
+      }
+    }
+
+    if (finalData && finalData.type !== 'question') {
+      state.results = finalData;
+      state.searchPage = finalData.page || state.searchPage;
+      const sc = finalData.scenario || 'recruiting';
+      headerMeta.textContent = `${SCENARIO_LABELS[sc] || sc} · ${(finalData.total || 0).toLocaleString()} matches`;
+      renderResults(finalData);
+    }
+  } catch (err) {
+    aiBubble.textContent = 'Refresh failed: ' + err.message;
+    aiBubble.style.color = '#FCA5A5';
+  } finally {
+    state.loading = false;
+    searchBtn.disabled = false;
+    searchLoading.classList.remove('active');
+  }
+}
+
+// ═══════════════════════════════════════
 // RENDER RESULTS
 // ═══════════════════════════════════════
 function renderResults(data) {
   const people = data.people || [];
   let html = '';
 
+  const sourceLabel = data.source === 'pdl' ? 'PDL Global' : 'Local DB';
   html += `<div class="results-meta-bar">
-    <span class="results-count">${people.length} results · ${(data.total || 0).toLocaleString()} total</span>
-    <span class="results-scenario-tag">${SCENARIO_LABELS[data.scenario] || data.scenario}</span>
+    <span class="results-count">${people.length} results · ${(data.total || 0).toLocaleString()} total · <span style="color:var(--green-accent);font-size:0.78rem">${sourceLabel}</span></span>
+    <div style="display:flex;align-items:center;gap:10px">
+      <span class="results-scenario-tag">${SCENARIO_LABELS[data.scenario] || data.scenario}</span>
+      <button class="action-btn refresh-btn" onclick="refreshResults()" title="Next batch" style="padding:6px 14px;font-size:0.82rem;display:flex;align-items:center;gap:5px;cursor:pointer">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+        Next batch
+      </button>
+    </div>
   </div>`;
 
   if (data.sql) html += `<div class="results-sql" title="Click to copy" onclick="navigator.clipboard.writeText(this.textContent)">${escHtml(data.sql)}</div>`;
@@ -2120,8 +2217,10 @@ function goHome() {
   resultsArea.innerHTML = '';
   searchInput.value = '';
   searchInput.style.height = 'auto';
-  headerMeta.textContent = 'PDL Search';
+  headerMeta.textContent = 'People Search';
   state.results = null;
+  state.searchPage = 0;
+  state.lastQuery = '';
   clearChatBubbles();
   examples.style.display = '';
   state.scenario = 'auto';
