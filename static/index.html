@@ -1979,7 +1979,8 @@ async function doSearch() {
       return;
     }
 
-    // Got results
+    // Got results — hide streaming AI bubble (raw JSON text), show clean results instead
+    aiBubble.style.display = 'none';
     state.results = finalData;
     state.searchPage = finalData.page || 0;
     examples.style.display = 'none';
@@ -2030,12 +2031,12 @@ async function refreshResults() {
     ? `换一批，page=${state.searchPage}`
     : '本地数据已看完，请从 PDL 全球数据库搜索更多结果';
 
-  appendChatBubble('user', hasMore ? 'Next batch' : 'Search global database...');
-
   const aiBubble = document.createElement('div');
   aiBubble.className = 'chat-bubble ai';
   aiBubble.textContent = hasMore ? '' : 'Expanding to global database...';
-  chatThread.appendChild(aiBubble);
+  let thread = chatThread.querySelector('.chat-thread');
+  if (!thread) { thread = document.createElement('div'); thread.className = 'chat-thread'; chatThread.appendChild(thread); }
+  thread.appendChild(aiBubble);
 
   try {
     const resp = await fetch('/api/chat/stream', {
@@ -2070,7 +2071,8 @@ async function refreshResults() {
       }
     }
 
-    if (finalData && finalData.type !== 'question') {
+    if (finalData && finalData.result_type !== 'question') {
+      aiBubble.style.display = 'none';
       state.results = finalData;
       state.searchPage = finalData.page || state.searchPage;
       const sc = finalData.scenario || 'recruiting';
