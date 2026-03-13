@@ -2,27 +2,60 @@
 
 import json
 import socket
+import urllib.request
 import psycopg2
 from psycopg2.extras import RealDictCursor
 from src.config import DB_HOST, DB_PORT, DB_NAME, DB_USER, DB_PASSWORD
 
+# Cache resolved IPv4 address
+_ipv4_cache: dict[str, str] = {}
+
 
 def _resolve_ipv4(host: str) -> str:
-    """Resolve hostname to IPv4 address (Railway doesn't support IPv6)."""
+    """Resolve hostname to IPv4, using Google DNS API as fallback."""
+    if host in _ipv4_cache:
+        return _ipv4_cache[host]
+
+    # Method 1: local socket (works if OS DNS returns A records)
     try:
         results = socket.getaddrinfo(host, None, socket.AF_INET)
         if results:
-            return results[0][4][0]
+            ip = results[0][4][0]
+            _ipv4_cache[host] = ip
+            return ip
     except socket.gaierror:
         pass
+
+    # Method 2: Google DNS-over-HTTPS (bypasses local DNS entirely)
+    try:
+        url = f"https://dns.google/resolve?name={host}&type=A"
+        req = urllib.request.Request(url, headers={"Accept": "application/json"})
+        with urllib.request.urlopen(req, timeout=5) as resp:
+            data = json.loads(resp.read())
+            for answer in data.get("Answer", []):
+                if answer.get("type") == 1:  # A record
+                    ip = answer["data"]
+                    _ipv4_cache[host] = ip
+                    return ip
+    except Exception:
+        pass
+
     return host
 
 
 def _get_conn():
-    """Create a new database connection."""
-    host = _resolve_ipv4(DB_HOST) if DB_HOST else DB_HOST
+    """Create a new database connection, forcing IPv4."""
+    ipv4 = _resolve_ipv4(DB_HOST) if DB_HOST else None
+    # Use hostaddr to bypass psycopg2's own DNS resolution
+    # Keep host for SSL SNI verification
+    if ipv4 and ipv4 != DB_HOST:
+        return psycopg2.connect(
+            host=DB_HOST, hostaddr=ipv4, port=DB_PORT, dbname=DB_NAME,
+            user=DB_USER, password=DB_PASSWORD,
+            sslmode="require",
+        )
     return psycopg2.connect(
-        host=host, port=DB_PORT, dbname=DB_NAME,
+        host=DB_HOST, port=DB_PORT, dbname=DB_NAME,
         user=DB_USER, password=DB_PASSWORD,
         sslmode="require",
     )
