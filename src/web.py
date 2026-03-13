@@ -108,63 +108,13 @@ async def index():
 
 @app.get("/api/health")
 async def api_health():
-    """Health check: test individual DNS methods and DB connection."""
-    from src.config import DB_HOST
-    import socket
-    host = DB_HOST
-    debug = {"db_host": host}
-
-    # Test Method 1: socket AF_INET
-    try:
-        results = socket.getaddrinfo(host, None, socket.AF_INET)
-        debug["m1_socket"] = results[0][4][0] if results else "no results"
-    except Exception as e:
-        debug["m1_socket"] = f"error: {e}"
-
-    # Test Method 2: httpx DoH
-    try:
-        import httpx
-        resp = httpx.get(
-            f"https://cloudflare-dns.com/dns-query?name={host}&type=A",
-            headers={"Accept": "application/dns-json"}, timeout=5,
-        )
-        debug["m2_httpx_status"] = resp.status_code
-        debug["m2_httpx_body"] = resp.text[:500]
-    except Exception as e:
-        debug["m2_httpx"] = f"error: {e}"
-
-    # Test Method 3: UDP DNS to 8.8.8.8
-    try:
-        import struct
-        qname = b""
-        for part in host.split("."):
-            qname += struct.pack("B", len(part)) + part.encode()
-        qname += b"\x00"
-        header = struct.pack(">HHHHHH", 0x1234, 0x0100, 1, 0, 0, 0)
-        question = qname + struct.pack(">HH", 1, 1)
-        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        sock.settimeout(3)
-        sock.sendto(header + question, ("8.8.8.8", 53))
-        resp_data = sock.recv(512)
-        sock.close()
-        debug["m3_udp"] = f"got {len(resp_data)} bytes"
-        # Parse to find A record
-        answer_count = struct.unpack(">H", resp_data[6:8])[0]
-        debug["m3_answers"] = answer_count
-    except Exception as e:
-        debug["m3_udp"] = f"error: {e}"
-
-    # Test DB connection
+    """Health check: test DB connection."""
     try:
         from src.local_search import search_local
         result = await search_local("engineer", page=0, size=1)
-        debug["db"] = "ok"
-        debug["total"] = result["total"]
+        return {"db": "ok", "total": result["total"]}
     except Exception as e:
-        debug["db"] = "error"
-        debug["db_error"] = str(e)[:200]
-
-    return debug
+        return {"db": "error", "message": str(e)[:300]}
 
 
 @app.get("/api/config")

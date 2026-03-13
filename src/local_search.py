@@ -1,114 +1,13 @@
 """Local people search using PostgreSQL full-text search on Supabase people table."""
 
 import json
-import socket
-import sys
 import psycopg2
 from psycopg2.extras import RealDictCursor
 from src.config import DB_HOST, DB_PORT, DB_NAME, DB_USER, DB_PASSWORD
 
 
-def _log(msg: str) -> None:
-    print(msg, file=sys.stderr, flush=True)
-
-# Cache resolved IPv4 address
-_ipv4_cache: dict[str, str] = {}
-
-
-def _resolve_ipv4(host: str) -> str:
-    """Resolve hostname to IPv4, using DNS-over-HTTPS as fallback."""
-    if host in _ipv4_cache:
-        return _ipv4_cache[host]
-
-    # Method 1: local socket (works if OS DNS returns A records)
-    try:
-        results = socket.getaddrinfo(host, None, socket.AF_INET)
-        if results:
-            ip = results[0][4][0]
-            _log(f"[ipv4] socket OK: {host} -> {ip}")
-            _ipv4_cache[host] = ip
-            return ip
-    except socket.gaierror as e:
-        _log(f"[ipv4] socket failed: {e}")
-
-    # Method 2: DNS-over-HTTPS via httpx (handles SSL properly in slim containers)
-    try:
-        import httpx
-        for dns_url in [
-            f"https://cloudflare-dns.com/dns-query?name={host}&type=A",
-            f"https://dns.google/resolve?name={host}&type=A",
-        ]:
-            try:
-                resp = httpx.get(dns_url, headers={"Accept": "application/dns-json"}, timeout=5)
-                data = resp.json()
-                for answer in data.get("Answer", []):
-                    if answer.get("type") == 1:  # A record
-                        ip = answer["data"]
-                        _log(f"[ipv4] DoH OK: {host} -> {ip}")
-                        _ipv4_cache[host] = ip
-                        return ip
-            except Exception as e:
-                _log(f"[ipv4] DoH {dns_url.split('/')[2]} failed: {e}")
-    except ImportError:
-        _log("[ipv4] httpx not available")
-
-    # Method 3: raw UDP DNS query to 8.8.8.8 (no HTTPS/TLS needed)
-    try:
-        import struct
-        qname = b""
-        for part in host.split("."):
-            qname += struct.pack("B", len(part)) + part.encode()
-        qname += b"\x00"
-        # DNS header: ID=0x1234, flags=0x0100 (standard query), 1 question
-        header = struct.pack(">HHHHHH", 0x1234, 0x0100, 1, 0, 0, 0)
-        question = qname + struct.pack(">HH", 1, 1)  # type A, class IN
-        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        sock.settimeout(3)
-        sock.sendto(header + question, ("8.8.8.8", 53))
-        resp_data = sock.recv(512)
-        sock.close()
-        # Parse answer: skip header (12 bytes) + question section
-        pos = 12
-        # Skip question name
-        while resp_data[pos] != 0:
-            pos += resp_data[pos] + 1
-        pos += 5  # null byte + type(2) + class(2)
-        # Parse answers
-        answer_count = struct.unpack(">H", resp_data[6:8])[0]
-        for _ in range(answer_count):
-            # Skip name (pointer or labels)
-            if resp_data[pos] & 0xC0 == 0xC0:
-                pos += 2
-            else:
-                while resp_data[pos] != 0:
-                    pos += resp_data[pos] + 1
-                pos += 1
-            rtype, rclass, ttl, rdlength = struct.unpack(">HHIH", resp_data[pos:pos+10])
-            pos += 10
-            if rtype == 1 and rdlength == 4:  # A record
-                ip = socket.inet_ntoa(resp_data[pos:pos+4])
-                _log(f"[ipv4] UDP DNS OK: {host} -> {ip}")
-                _ipv4_cache[host] = ip
-                return ip
-            pos += rdlength
-    except Exception as e:
-        _log(f"[ipv4] UDP DNS failed: {e}")
-
-    _log(f"[ipv4] All methods failed for {host}")
-    return host
-
-
 def _get_conn():
-    """Create a new database connection, forcing IPv4."""
-    ipv4 = _resolve_ipv4(DB_HOST) if DB_HOST else None
-    # Use hostaddr to bypass psycopg2's own DNS resolution
-    # Keep host for SSL SNI verification
-    if ipv4 and ipv4 != DB_HOST:
-        return psycopg2.connect(
-            host=DB_HOST, hostaddr=ipv4, port=DB_PORT, dbname=DB_NAME,
-            user=DB_USER, password=DB_PASSWORD,
-            sslmode="require",
-        )
+    """Create a new database connection via Supabase pooler."""
     return psycopg2.connect(
         host=DB_HOST, port=DB_PORT, dbname=DB_NAME,
         user=DB_USER, password=DB_PASSWORD,
