@@ -1,15 +1,28 @@
 """Local people search using PostgreSQL full-text search on Supabase people table."""
 
 import json
+import socket
 import psycopg2
 from psycopg2.extras import RealDictCursor
 from src.config import DB_HOST, DB_PORT, DB_NAME, DB_USER, DB_PASSWORD
 
 
+def _resolve_ipv4(host: str) -> str:
+    """Resolve hostname to IPv4 address (Railway doesn't support IPv6)."""
+    try:
+        results = socket.getaddrinfo(host, None, socket.AF_INET)
+        if results:
+            return results[0][4][0]
+    except socket.gaierror:
+        pass
+    return host
+
+
 def _get_conn():
     """Create a new database connection."""
+    host = _resolve_ipv4(DB_HOST) if DB_HOST else DB_HOST
     return psycopg2.connect(
-        host=DB_HOST, port=DB_PORT, dbname=DB_NAME,
+        host=host, port=DB_PORT, dbname=DB_NAME,
         user=DB_USER, password=DB_PASSWORD,
         sslmode="require",
     )
