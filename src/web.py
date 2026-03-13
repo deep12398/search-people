@@ -108,13 +108,38 @@ async def index():
 
 @app.get("/api/health")
 async def api_health():
-    """Health check: test DB connection."""
+    """Health check: test DB connection with DNS debug info."""
+    from src.local_search import _resolve_ipv4
+    from src.config import DB_HOST
+    import socket
+
+    debug = {"db_host": DB_HOST}
+
+    # Test DNS resolution
+    try:
+        ipv4 = _resolve_ipv4(DB_HOST)
+        debug["resolved_ipv4"] = ipv4
+    except Exception as e:
+        debug["resolve_error"] = str(e)
+
+    # Test what system DNS returns
+    try:
+        all_addrs = socket.getaddrinfo(DB_HOST, 5432)
+        debug["system_dns"] = [f"{a[0].name}:{a[4][0]}" for a in all_addrs[:5]]
+    except Exception as e:
+        debug["system_dns_error"] = str(e)
+
+    # Test DB connection
     try:
         from src.local_search import search_local
         result = await search_local("engineer", page=0, size=1)
-        return {"db": "ok", "total": result["total"]}
+        debug["db"] = "ok"
+        debug["total"] = result["total"]
     except Exception as e:
-        return {"db": "error", "message": str(e)}
+        debug["db"] = "error"
+        debug["db_error"] = str(e)
+
+    return debug
 
 
 @app.get("/api/config")
