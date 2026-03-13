@@ -106,6 +106,17 @@ async def index():
     return (STATIC_DIR / "index.html").read_text(encoding="utf-8")
 
 
+@app.get("/api/health")
+async def api_health():
+    """Health check: test DB connection."""
+    try:
+        from src.local_search import search_local
+        result = await search_local("engineer", page=0, size=1)
+        return {"db": "ok", "total": result["total"]}
+    except Exception as e:
+        return {"db": "error", "message": str(e)}
+
+
 @app.get("/api/config")
 async def api_config():
     """Public config for frontend Supabase initialization."""
