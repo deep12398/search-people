@@ -710,6 +710,7 @@ button { font-family: var(--font-body); }
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  overflow-y: auto;
 }
 
 /* Mobile toggle */
@@ -774,6 +775,17 @@ button { font-family: var(--font-body); }
   max-width: 800px;
   width: 100%;
   margin: 0 auto;
+}
+
+/* Compact mode: when results are showing, shrink search area */
+.search-area.has-results {
+  flex: 0;
+  justify-content: flex-start;
+  padding-top: 1rem;
+}
+.search-area.has-results .search-hero-title,
+.search-area.has-results .search-hero-sub {
+  display: none;
 }
 
 .search-hero-title {
@@ -1974,6 +1986,9 @@ async function doSearch() {
     const sc = finalData.scenario || 'recruiting';
     headerMeta.textContent = `${SCENARIO_LABELS[sc] || sc} · ${(finalData.total || 0).toLocaleString()} matches`;
 
+    // Compact search area and show results
+    document.getElementById('searchArea').classList.add('has-results');
+
     // Update the history entry with result count
     if (state.searchHistory.length > 0) {
       state.searchHistory[0].cnt = (finalData.people || []).length;
@@ -1986,6 +2001,7 @@ async function doSearch() {
       resultsArea.innerHTML = `<div class="empty-state"><div class="empty-text">API Error</div><div class="empty-hint">${escHtml(finalData.error)}</div></div>`;
     } else {
       renderResults(finalData);
+      resultsArea.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   } catch (err) {
     aiBubble.textContent = 'Search failed: ' + err.message;
@@ -2234,6 +2250,7 @@ function goHome() {
   state.lastQuery = '';
   clearChatBubbles();
   examples.style.display = '';
+  document.getElementById('searchArea').classList.remove('has-results');
   state.scenario = 'auto';
   navTo('ai');
   searchInput.focus();
