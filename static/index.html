@@ -1958,7 +1958,7 @@ async function doSearch() {
 
     if (!finalData) throw new Error('No response from agent');
 
-    if (finalData.question || finalData.type === 'question') {
+    if (finalData.result_type === 'question' || finalData.question) {
       // AI asked a question or error — bubble already shows it, just focus input
       if (finalData.question && !aiBubble.textContent) {
         aiBubble.textContent = finalData.question;

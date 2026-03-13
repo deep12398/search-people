@@ -207,7 +207,11 @@ async def api_chat_stream(req: ChatRequest, request: Request):
             # Send final parsed result
             parsed = _parse_agent_response(response_text)
             parsed["session_id"] = sid
-            yield f"data: {json.dumps({'type': 'done', **parsed})}\n\n"
+            # Ensure 'type' is always 'done' for the final SSE event
+            # (parsed may contain type='question' or type='results')
+            parsed["result_type"] = parsed.pop("type", "question")
+            parsed["type"] = "done"
+            yield f"data: {json.dumps(parsed)}\n\n"
 
             # Save history
             if auth_user:
