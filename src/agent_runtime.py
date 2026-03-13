@@ -145,5 +145,6 @@ def create_agent_options(
         permission_mode="bypassPermissions",
         can_use_tool=guard.can_use_tool,
         hooks=hooks or {},
+        model="claude-sonnet-4-20250514",
     )
     return guard, options
