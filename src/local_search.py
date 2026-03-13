@@ -1,13 +1,15 @@
 """Local people search using PostgreSQL full-text search on Supabase people table."""
 
 import json
-import logging
 import socket
+import sys
 import psycopg2
 from psycopg2.extras import RealDictCursor
 from src.config import DB_HOST, DB_PORT, DB_NAME, DB_USER, DB_PASSWORD
 
-logger = logging.getLogger(__name__)
+
+def _log(msg: str) -> None:
+    print(msg, file=sys.stderr, flush=True)
 
 # Cache resolved IPv4 address
 _ipv4_cache: dict[str, str] = {}
@@ -23,11 +25,11 @@ def _resolve_ipv4(host: str) -> str:
         results = socket.getaddrinfo(host, None, socket.AF_INET)
         if results:
             ip = results[0][4][0]
-            logger.info(f"[ipv4] socket OK: {host} -> {ip}")
+            _log(f"[ipv4] socket OK: {host} -> {ip}")
             _ipv4_cache[host] = ip
             return ip
     except socket.gaierror as e:
-        logger.warning(f"[ipv4] socket failed: {e}")
+        _log(f"[ipv4] socket failed: {e}")
 
     # Method 2: DNS-over-HTTPS via httpx (handles SSL properly in slim containers)
     try:
@@ -42,13 +44,13 @@ def _resolve_ipv4(host: str) -> str:
                 for answer in data.get("Answer", []):
                     if answer.get("type") == 1:  # A record
                         ip = answer["data"]
-                        logger.info(f"[ipv4] DoH OK: {host} -> {ip}")
+                        _log(f"[ipv4] DoH OK: {host} -> {ip}")
                         _ipv4_cache[host] = ip
                         return ip
             except Exception as e:
-                logger.warning(f"[ipv4] DoH {dns_url.split('/')[2]} failed: {e}")
+                _log(f"[ipv4] DoH {dns_url.split('/')[2]} failed: {e}")
     except ImportError:
-        logger.warning("[ipv4] httpx not available")
+        _log("[ipv4] httpx not available")
 
     # Method 3: raw UDP DNS query to 8.8.8.8 (no HTTPS/TLS needed)
     try:
@@ -85,14 +87,14 @@ def _resolve_ipv4(host: str) -> str:
             pos += 10
             if rtype == 1 and rdlength == 4:  # A record
                 ip = socket.inet_ntoa(resp_data[pos:pos+4])
-                logger.info(f"[ipv4] UDP DNS OK: {host} -> {ip}")
+                _log(f"[ipv4] UDP DNS OK: {host} -> {ip}")
                 _ipv4_cache[host] = ip
                 return ip
             pos += rdlength
     except Exception as e:
-        logger.warning(f"[ipv4] UDP DNS failed: {e}")
+        _log(f"[ipv4] UDP DNS failed: {e}")
 
-    logger.error(f"[ipv4] All methods failed for {host}")
+    _log(f"[ipv4] All methods failed for {host}")
     return host
 
 
