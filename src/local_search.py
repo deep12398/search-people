@@ -21,10 +21,11 @@ def _resolve_ipv4(host: str) -> str:
         results = socket.getaddrinfo(host, None, socket.AF_INET)
         if results:
             ip = results[0][4][0]
+            print(f"[ipv4] Method 1 OK: {host} -> {ip}")
             _ipv4_cache[host] = ip
             return ip
-    except socket.gaierror:
-        pass
+    except socket.gaierror as e:
+        print(f"[ipv4] Method 1 failed: {e}")
 
     # Method 2: Google DNS-over-HTTPS (bypasses local DNS entirely)
     try:
@@ -35,11 +36,14 @@ def _resolve_ipv4(host: str) -> str:
             for answer in data.get("Answer", []):
                 if answer.get("type") == 1:  # A record
                     ip = answer["data"]
+                    print(f"[ipv4] Method 2 OK: {host} -> {ip}")
                     _ipv4_cache[host] = ip
                     return ip
-    except Exception:
-        pass
+        print(f"[ipv4] Method 2: no A records in response: {data}")
+    except Exception as e:
+        print(f"[ipv4] Method 2 failed: {e}")
 
+    print(f"[ipv4] All methods failed for {host}, returning hostname")
     return host
 
 
