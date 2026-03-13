@@ -321,7 +321,7 @@ body {
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 // ─── Supabase Config ──────────────────────────────────────────────────────────
-let supabase = null;
+let sbClient = null;
 let currentTab = 'login';
 
 (async () => {
@@ -330,13 +330,22 @@ let currentTab = 'login';
     const resp = await fetch('/api/config');
     const cfg = await resp.json();
     if (cfg.supabase_url && cfg.supabase_anon_key) {
-      supabase = window.supabase.createClient(cfg.supabase_url, cfg.supabase_anon_key);
+      sbClient = window.supabase.createClient(cfg.supabase_url, cfg.supabase_anon_key);
     }
   } catch (e) { console.warn('Config not available:', e); }
 
+  if (!sbClient) return;
+
+  // Listen for auth state changes (handles OAuth callback)
+  sbClient.auth.onAuthStateChange((event, session) => {
+    if (event === 'SIGNED_IN' && session) {
+      localStorage.setItem('sb_access_token', session.access_token);
+      window.location.href = '/';
+    }
+  });
+
   // Check if already logged in
-  if (!supabase) return;
-  const { data: { session } } = await supabase.auth.getSession();
+  const { data: { session } } = await sbClient.auth.getSession();
   if (session) {
     window.location.href = '/';
   }
@@ -366,7 +375,7 @@ async function handleSubmit(e) {
   e.preventDefault();
   hideMessage();
 
-  if (!supabase) {
+  if (!sbClient) {
     showMessage('Supabase not configured. Use Demo mode instead.');
     return;
   }
@@ -380,13 +389,13 @@ async function handleSubmit(e) {
 
   try {
     if (currentTab === 'login') {
-      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+      const { data, error } = await sbClient.auth.signInWithPassword({ email, password });
       if (error) throw error;
       localStorage.setItem('sb_access_token', data.session.access_token);
       window.location.href = '/';
     } else {
       const displayName = document.getElementById('displayName').value;
-      const { data, error } = await supabase.auth.signUp({
+      const { data, error } = await sbClient.auth.signUp({
         email,
         password,
         options: { data: { full_name: displayName } },
@@ -408,12 +417,12 @@ async function handleSubmit(e) {
 }
 
 async function googleLogin() {
-  if (!supabase) {
+  if (!sbClient) {
     showMessage('Supabase not configured. Use Demo mode instead.');
     return;
   }
 
-  const { error } = await supabase.auth.signInWithOAuth({
+  const { error } = await sbClient.auth.signInWithOAuth({
     provider: 'google',
     options: {
       redirectTo: window.location.origin + '/',
@@ -422,15 +431,7 @@ async function googleLogin() {
   if (error) showMessage(error.message);
 }
 
-// Listen for auth state changes (handles OAuth callback)
-if (supabase) {
-  supabase.auth.onAuthStateChange((event, session) => {
-    if (event === 'SIGNED_IN' && session) {
-      localStorage.setItem('sb_access_token', session.access_token);
-      window.location.href = '/';
-    }
-  });
-}
+
 </script>
 </body>
 </html>
